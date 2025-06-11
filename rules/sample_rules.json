@@ -1,0 +1,11 @@
+[
+    {
+      "head": "worksInCity",
+      "body": ["worksFor", "locatedIn"]
+    },
+    {
+      "head": "livesInCity",
+      "body": ["livesIn"]
+    }
+  ]
+  

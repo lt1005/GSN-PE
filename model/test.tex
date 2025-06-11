@@ -1,0 +1,194 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{geometry}
+\geometry{a4paper, margin=1in}
+
+% --- 中文支持设置 (请使用 XeLaTeX 编译器编译) ---
+\usepackage{xeCJK} % 加载 xeCJK 宏包以支持中文
+\setCJKmainfont{SimSun} % 设置主中文字体。请确保您的系统安装了此字体。
+                        % 如果没有，请替换为其他已安装的字体，例如 "Microsoft YaHei" 或 "KaiTi"
+% 如果您的 LaTeX 发行版较新，也可以尝试直接使用 ctex 宏包，它通常会自动配置字体：
+% \usepackage{ctex}
+% --------------------------------------------------
+
+% --- TikZ 绘图宏包及库 ---
+\usepackage{tikz}
+\usetikzlibrary{positioning, arrows.meta, backgrounds}
+
+% --- 自定义颜色定义 (替换掉原先不识别的十六进制格式) ---
+\usepackage{xcolor}
+\definecolor{reasoningcolor}{RGB}{180,199,231} % 对应原先的 ##B4C7E7 (浅蓝色)
+\definecolor{triggercolor}{RGB}{178,206,231}   % 对应原先的 blue!20
+\definecolor{calculatorcolor}{RGB}{198,225,248} % 对应原先的 green!20
+\definecolor{updatercolor}{RGB}{255,204,153}   % 对应原先的 orange!20
+\definecolor{entitycolor}{RGB}{180,199,231} % 对应原先的 ##B4C7E7，用于实体节点
+
+% --- TikZ 样式定义 (根据您的错误信息推断可能需要定义这些样式) ---
+\tikzset{
+    box/.style={
+        rectangle,
+        rounded corners,
+        draw=black,
+        fill=white,
+        thick,
+        text width=4.5cm,
+        minimum height=1.5cm,
+        align=center
+    },
+    process_box/.style={ % 用于流程中的步骤
+        rectangle,
+        draw,
+        fill=white,
+        thick,
+        text width=3.5cm,
+        minimum height=1cm,
+        align=center
+    },
+    entity/.style={ % 用于实体节点
+        rectangle,
+        rounded corners,
+        draw=black,
+        fill=entitycolor, % 使用自定义的实体颜色
+        thick,
+        minimum width=2.5cm,
+        minimum height=0.8cm,
+        align=center
+    },
+    arrow/.style={
+        -Stealth, % 箭头样式
+        thick
+    },
+    comment/.style={
+        text width=3cm,
+        align=left,
+        font=\small,
+        text=gray
+    }
+}
+
+\title{Anchor Subgraph Expansion 与结构嵌入对齐技术方案（完整版）}
+\author{}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\section{目标}
+\begin{itemize}
+    \item 针对规则 $XX$ 的谓词集合，从知识图谱中采样最小支持子图 $G_t$，确保结构上与规则匹配；
+    \item 通过结构嵌入 $f_{\text{struct}}$ 实现规则与子图的可对齐和判定；
+    \item 保证边扩展过程高效且准确，避免枚举爆炸。
+\end{itemize}
+
+\section{预备定义}
+\begin{itemize}
+    \item \textbf{规则前件谓词集合}： $X = \{ p_1, p_2, ..., p_m \}$，构造规则图 $G_X$（无实体，仅谓词节点及边）；
+    \item \textbf{结构 motif 模板集}： $\mathcal{M} = \{ m_1, m_2, ..., m_d \}$，如路径、三角、星型等结构模板；
+    \item \textbf{结构嵌入函数}：对任意图 $G$，通过 motif 计数线性映射，得到结构向量：
+    $$f_{\text{struct}}(G) = W \cdot \text{motif\_counts}(G, \mathcal{M}) \in \mathbb{R}^d$$
+\end{itemize}
+
+\section{规则结构编码}
+\begin{itemize}
+    \item 计算规则图 $G_X$ 在 motif 集 $\mathcal{M}$ 上的计数：
+    $$\text{motif\_counts}(G_X, \mathcal{M}) = [c_1, c_2, ..., c_d]$$
+    \item 得到规则结构嵌入：
+    $$f_{\text{struct}}(X) := f_{\text{struct}}(G_X)$$
+    \item 该嵌入作为结构对齐的“锚点”。
+\end{itemize}
+
+\section{Anchor Predicate Expansion — 子图采样流程}
+\subsection{初始化}
+\begin{itemize}
+    \item 遍历知识图谱中满足任一谓词 $p_i \in X$ 的三元组 $(h, p_i, t)$，将其作为扩展起点；
+    \item 初始子图 $G_0 = \{ (h, p_i, t) \}$，计算结构嵌入 $f_{\text{struct}}(G_0)$。
+\end{itemize}
+
+\subsection{递归边扩展}
+对于当前子图 $G_t$，候选扩展边集合为与 $G_t$ 节点相邻的知识图谱边，考虑候选边 $e$：
+\begin{itemize}
+    \item 计算扩展后子图 $G_{t+1} = G_t \cup \{ e \}$ 的结构嵌入：$f_{\text{struct}}(G_{t+1})$
+    \item 计算扩展相似度增益（L2距离）：
+    $$\Delta = \| f_{\text{struct}}(G_t) - f_{\text{struct}}(X) \|_2 - \| f_{\text{struct}}(G_{t+1}) - f_{\text{struct}}(X) \|_2$$
+    \item \textbf{扩展准则}：
+    \begin{itemize}
+        \item 若 $\Delta \geq \tau$（预设阈值），表示扩展使子图结构更接近规则，接受该边扩展；
+        \item 否则，舍弃该边。
+    \end{itemize}
+\end{itemize}
+
+\subsection{终止条件}
+\begin{itemize}
+    \item 子图包含规则全部谓词 $X$（即谓词集合 $X \subseteq \text{predicates}(G_t)$）；
+    \item 结构嵌入距离满足：
+    $$\| f_{\text{struct}}(G_t) - f_{\text{struct}}(X) \|_2 \leq \epsilon$$
+    \item 达到预设最大子图大小或深度。
+\end{itemize}
+
+\section{负样本采样}
+\begin{itemize}
+    \item 对规则谓词集 $X$ 随机扰动，替换、添加或删除谓词，得到 $X' \neq X$；
+    \item 基于 $X'$ 同样执行 Anchor Predicate Expansion 采样子图，作为负样本。
+\end{itemize}
+
+\section{对齐与训练目标}
+\begin{itemize}
+    \item 通过结构嵌入 $f_{\text{struct}}$ 和联合语义嵌入 $f$，训练规则与子图嵌入对齐模型；
+    \item 损失函数鼓励正样本距离最小，负样本距离较大。
+\end{itemize}
+
+\section{总结}
+\begin{itemize}
+    \item 结构嵌入 $f_{\text{struct}}$ 统一规则和子图的结构表示空间，实现可对齐；
+    \item 扩展边的判定基于结构相似度增益，防止盲目扩张，保证子图最小且高质量；
+    \item 最终得到与规则结构高度匹配的实例子图，促进规则推理和知识发现。
+\end{itemize}
+
+% --- 示例 TikZ 图形 (根据您提供的错误信息中的中文节点推断) ---
+% 如果您需要绘制具体的流程图，请提供更详细的图结构描述。
+% 这里仅仅是一个基于错误信息推断的简单示例。
+\newpage % 另起一页放置图形，保持文档整洁
+
+\section*{示例流程图}
+\begin{figure}[htbp]
+    \centering
+    \begin{tikzpicture}[node distance=1.5cm and 2cm]
+        % 主流程框
+        \node[box, fill=reasoningcolor] (reasoning) {关系推理层};
+
+        % 内部组件
+        \node[process_box, fill=triggercolor] (trigger) at (reasoning.160) {规则触发器};
+        \node[process_box, below=of trigger] (c3) {规则C3匹配};
+        \node[process_box, below=of c3] (verify) {输入实例校验};
+
+        \node[process_box, fill=calculatorcolor] (calculator) at (reasoning.200) {动态计算器};
+        \node[process_box, below=of calculator] (result) {风险指数};
+
+        \node[process_box, fill=updatercolor] (updater) at (reasoning.240) {知识更新器};
+        \node[process_box, below=of updater] (add) {添加保护剂节点};
+        \node[process_box, below=of add] (modify) {修改剂量标签};
+
+        % 连接线
+        \draw[arrow] (trigger) -- node[left] {触发} (c3);
+        \draw[arrow] (c3) -- node[left] {校验结果} (verify);
+        \draw[arrow] (reasoning.south west) |- (calculator); % 示例连接
+
+        % 实体节点示例
+        \node[entity] (patient) at (8, 0) {患者P001};
+        \node[entity, below=of patient] (drug) {药物A};
+        \node[entity, below=of drug] (disease) {疾病B};
+
+        % 实体节点之间的关系示例
+        \draw[arrow] (patient) -- node[above, sloped] {患有} (disease);
+        \draw[arrow] (patient) -- node[above, sloped] {服用} (drug);
+
+    \end{tikzpicture}
+    \caption{关系推理层流程示例}
+    \label{fig:reasoning_flow}
+\end{figure}
+
+\end{document}
