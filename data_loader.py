@@ -133,4 +133,8 @@ def collate_fn(batch):
         'premise_motif': premise_motif,
         'pos_motif': pos_motif,
         'neg_motif': neg_motif
+<<<<<<< HEAD
     }
+=======
+    }
+>>>>>>> a9413a5ab9aa5a9dab19631a1ada3682449e4209

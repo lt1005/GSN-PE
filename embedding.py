@@ -178,4 +178,8 @@ class SubgraphEncoder(nn.Module):
         fused = torch.cat([semantic_batch, motif_embeds], dim=-1)
         out = self.fusion(fused)  # (batch_size, output_dim)
         
+<<<<<<< HEAD
         return out
+=======
+        return out
+>>>>>>> a9413a5ab9aa5a9dab19631a1ada3682449e4209

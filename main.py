@@ -164,4 +164,8 @@ def main():
     print(f"结果已保存至 {args.output_dir}")
 
 if __name__ == "__main__":
+<<<<<<< HEAD
     main()
+=======
+    main()
+>>>>>>> a9413a5ab9aa5a9dab19631a1ada3682449e4209

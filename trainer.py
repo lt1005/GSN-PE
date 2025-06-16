@@ -200,4 +200,8 @@ class RuleDataset(Dataset):
             'positive_motif_counts': positive_motif_counts,
             'negative_subgraph': negative_subgraph,
             'negative_motif_counts': negative_motif_counts
+<<<<<<< HEAD
         }
+=======
+        }
+>>>>>>> a9413a5ab9aa5a9dab19631a1ada3682449e4209

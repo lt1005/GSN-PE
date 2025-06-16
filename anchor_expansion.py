@@ -99,171 +99,51 @@ class AnchorSubgraphSampler:
         threshold: 结构相似度阈值
         """
         self.kg = kg_graph
-        self.motif_counter = MotifCounter(motif_templates)
-        self.embedder = StructureEmbedder(self.motif_counter, embedding_dim)
-        self.max_size = max_size
-        self.threshold = threshold
-    
-    def build_rule_graph(self, rule_predicates):
-        """构建规则图（无实体，仅谓词节点及边）"""
-        rule_graph = nx.MultiDiGraph()
-        
-        # 添加谓词节点和边
-        for i in range(len(rule_predicates)-1):
-            rule_graph.add_edge(rule_predicates[i], rule_predicates[i+1], key=rule_predicates[i])
-        
-        return rule_graph
-    
-    def sample(self, rule_predicates, num_samples=10):
-        """
-        从知识图谱中采样与规则匹配的子图
-        
-        参数:
-            rule_predicates: 规则前件谓词集合 [p1, p2, ..., pm]
-            num_samples: 采样的子图数量
-        
-        返回:
-            与规则匹配的子图列表
-        """
-        # 构建规则图并计算其结构嵌入
-        rule_graph = self.build_rule_graph(rule_predicates)
-        rule_embedding = self.embedder.embed(rule_graph)
-        
-        # 查找知识图谱中包含规则谓词的所有三元组
-        candidate_triples = []
-        for h, t, key in self.kg.edges(data='key'):
-            if key in rule_predicates:
-                candidate_triples.append((h, key, t))
-        
-        # 采样子图
-        sampled_subgraphs = []
-        for _ in range(num_samples):
-            # 随机选择一个候选三元组作为起点
-            if not candidate_triples:
-                continue
-                
-            start_triple = random.choice(candidate_triples)
-            subgraph = self._expand_from_triple(start_triple, rule_predicates, rule_embedding)
-            if subgraph:
-                sampled_subgraphs.append(subgraph)
-        
-        # 选择与规则最匹配的子图
-        if sampled_subgraphs:
-            best_subgraph = self._select_best_subgraph(sampled_subgraphs, rule_embedding)
-            return best_subgraph
-        return None
-    
-    def _expand_from_triple(self, start_triple, rule_predicates, rule_embedding):
-        """从起始三元组开始扩展子图"""
-        head, rel, tail = start_triple
-        subgraph = nx.MultiDiGraph()
-        subgraph.add_edge(head, tail, key=rel)
-        
-        # 计算当前子图的结构嵌入
-        current_embedding = self.embedder.embed(subgraph)
-        current_distance = torch.norm(current_embedding - rule_embedding).item()
-        
-        # 递归扩展子图
-        for _ in range(self.max_size - 1):
-            # 获取所有可能的扩展边
-            candidate_edges = self._get_candidate_edges(subgraph, rule_predicates)
-            if not candidate_edges:
-                break
-                
-            # 计算每条候选边的扩展增益
-            best_edge = None
-            best_gain = -float('inf')
-            
-            for edge in candidate_edges:
-                # 临时添加边
-                temp_subgraph = subgraph.copy()
-                temp_subgraph.add_edge(edge[0], edge[2], key=edge[1])
-                
-                # 计算扩展后的结构嵌入和距离
-                new_embedding = self.embedder.embed(temp_subgraph)
-                new_distance = torch.norm(new_embedding - rule_embedding).item()
-                
-                # 计算增益
-                gain = current_distance - new_distance
-                
-                if gain > best_gain and gain > self.threshold:
-                    best_gain = gain
-                    best_edge = edge
-            
-            # 如果没有找到有增益的边，停止扩展
-            if best_edge is None:
-                break
-                
-            # 添加最佳边
-            subgraph.add_edge(best_edge[0], best_edge[2], key=best_edge[1])
-            current_embedding = self.embedder.embed(subgraph)
-            current_distance = torch.norm(current_embedding - rule_embedding).item()
-            
-            # 检查是否包含所有规则谓词
-            subgraph_predicates = set([rel for _, rel, _ in subgraph.edges(data='key')])
-            if subgraph_predicates.issuperset(set(rule_predicates)):
-                break
-        
-        return subgraph
-    
-    def _get_candidate_edges(self, subgraph, rule_predicates):
-        """获取子图的候选扩展边"""
-        candidate_edges = []
-        
-        # 获取子图的所有节点
-        nodes = list(subgraph.nodes())
-        
-        # 对于每个节点，查找其在知识图谱中的邻居
-        for node in nodes:
-            for neighbor in self.kg.neighbors(node):
-                for _, rel_key, _ in self.kg.edges(node, neighbor, keys=True, data=True):
-                    # 如果边的谓词在规则谓词集合中，且边不在当前子图中
-                    if rel_key in rule_predicates and (node, rel_key, neighbor) not in subgraph.edges(data='key'):
-                        candidate_edges.append((node, rel_key, neighbor))
-        
-        return candidate_edges
-    
-    def _select_best_subgraph(self, subgraphs, rule_embedding):
-        """选择与规则最匹配的子图"""
-        best_subgraph = None
-        best_distance = float('inf')
-        
-        for subgraph in subgraphs:
-            embedding = self.embedder.embed(subgraph)
-            distance = torch.norm(embedding - rule_embedding).item()
-            
-            if distance < best_distance:
-                best_distance = distance
-                best_subgraph = subgraph
-        
-        return best_subgraph
+        self.motif_templates = motif_templates  # e.g. [ [(p1,p2)], [(p3,p4,p5)], ... ]
+        self.max_hop = max_hop
 
-def negative_sample(rule_predicates, kg_graph, motif_templates, embedding_dim=64, max_size=10, threshold=0.1):
-    """生成负样本（与规则不匹配的子图）"""
-    # 随机扰动规则谓词集
-    new_predicates = rule_predicates.copy()
-    operation = random.choice(['replace', 'add', 'delete'])
-    
-    if operation == 'replace' and len(new_predicates) > 0:
-        # 替换一个谓词
-        index = random.randint(0, len(new_predicates) - 1)
-        all_predicates = set([rel for _, rel, _ in kg_graph.edges(data='key')])
-        available_predicates = all_predicates - set(new_predicates)
-        if available_predicates:
-            new_predicates[index] = random.choice(list(available_predicates))
-    
-    elif operation == 'add':
-        # 添加一个谓词
-        all_predicates = set([rel for _, rel, _ in kg_graph.edges(data='key')])
-        available_predicates = all_predicates - set(new_predicates)
-        if available_predicates:
-            new_predicates.append(random.choice(list(available_predicates)))
-    
-    elif operation == 'delete' and len(new_predicates) > 1:
-        # 删除一个谓词
-        index = random.randint(0, len(new_predicates) - 1)
-        del new_predicates[index]
-    
-    # 使用扰动后的谓词集采样子图
-    sampler = AnchorSubgraphSampler(kg_graph, motif_templates, embedding_dim, max_size, threshold)
-    return sampler.sample(new_predicates)
+    def build(self, anchor_triple):
+        head, rel, tail = anchor_triple
+        q_nodes = set([head, tail])
+        q_edges = set([(head, rel, tail)])
+
+        frontier = set([head, tail])
+        visited = set([head, tail])
+
+        for _ in range(self.max_hop):
+            next_frontier = set()
+            for node in frontier:
+                for neighbor in self.kg.neighbors(node):
+                    for _, rel_key, edge_data in self.kg.edges(node, neighbor, keys=True, data=True):
+                        new_edge = (node, rel_key, neighbor)
+                        if self._edge_should_add(q_edges, new_edge):
+                            q_edges.add(new_edge)
+                            q_nodes.update([node, neighbor])
+                            next_frontier.add(neighbor)
+            frontier = next_frontier - visited
+            visited.update(frontier)
+
+        return self._subgraph_from_edges(q_edges)
+
+    def _edge_should_add(self, current_edges, candidate_edge):
+        # 判断加入这条边是否增加motif计数（即 motif 结构支配增强）
+        current_path = [rel for (_, rel, _) in current_edges]
+        extended_path = current_path + [candidate_edge[1]]
+        for motif in self.motif_templates:
+            if self._motif_gain(motif, current_path, extended_path):
+                return True
+        return False
+
+    def _motif_gain(self, motif, current_path, extended_path):
+        motif_str = '-'.join(motif)
+        path_str_1 = '-'.join(current_path)
+        path_str_2 = '-'.join(extended_path)
+        return motif_str not in path_str_1 and motif_str in path_str_2
+
+    def _subgraph_from_edges(self, edge_set):
+        subg = nx.MultiDiGraph()
+        for h, r, t in edge_set:
+            subg.add_edge(h, t, key=r)
+        return subg
+
+
