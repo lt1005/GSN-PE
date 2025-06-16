@@ -2,7 +2,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from .layers import GCNLayer
+from layers import GCNLayer
 
 class GNNEncoder(nn.Module):
     def __init__(self, in_dim, hidden_dim, out_dim, dropout=0.1):

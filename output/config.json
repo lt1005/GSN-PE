@@ -1,0 +1,15 @@
+{
+  "entity_num": 40943,
+  "relation_num": 11,
+  "predicate_vocab_size": 11,
+  "entity_vocab_size": 40943,
+  "embed_dim": 64,
+  "motif_num": 3,
+  "motif_embed_dim": 64,
+  "output_dim": 128,
+  "batch_size": 16,
+  "learning_rate": 0.001,
+  "weight_decay": 0.0001,
+  "max_subgraph_size": 8,
+  "device": "cpu"
+}
