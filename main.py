@@ -1,171 +1,344 @@
-import argparse
-import torch
 import os
-import json
-from data_loader import RuleDataset, load_relations, load_entities, load_mined_rules, collate_fn
-from trainer import RuleAlignmentTrainer
-from evaluation import evaluate, evaluate_subgraph_isomorphism
-from torch.utils.data import DataLoader
-import numpy as np
+import sys
+import torch
+import logging
+import networkx as nx
+from typing import Dict, List, Tuple, Any
 
-def set_seed(seed):
-    """设置随机种子，保证结果可复现"""
-    np.random.seed(seed)
-    torch.manual_seed(seed)
-    if torch.cuda.is_available():
-        torch.cuda.manual_seed_all(seed)
+# 导入所有模块
+from utils.config import Config
+from utils.logging_utils import setup_logging
+from utils.graph_utils import nx_to_pyg, extract_subgraph
+from data.kg_loader import KGLoader
+from data.rule_loader import RuleLoader
+from struct_embed.motif_extractor import MotifExtractor
+from struct_embed.gnn_encoder import GNNEncoder
+from struct_embed.embed_fusion import EmbedFusion
+from matcher.graph_expander import GraphExpander
+from matcher.struct_matcher import StructMatcher
+from matcher.scoring import ScoringFunction
+from trainer.train_gnn import GNNTrainer
+from trainer.contrastive_loss import ContrastiveLoss
+
+class StructMatchSystem:
+    """StructMatch主系统"""
+    
+    def __init__(self, config: Config):
+        self.config = config
+        self.logger = setup_logging()
+        
+        # 初始化组件
+        self.motif_extractor = MotifExtractor(config.motif_dim)
+        self.gnn_encoder = GNNEncoder(
+            input_dim=1,
+            hidden_dim=config.gnn_hidden_dim,
+            output_dim=config.gnn_output_dim
+        )
+        self.embed_fusion = EmbedFusion(
+            motif_dim=config.motif_dim,
+            gnn_dim=config.gnn_output_dim,
+            fusion_dim=config.fusion_dim
+        )
+        self.graph_expander = GraphExpander(
+            max_steps=config.max_expand_steps,
+            beam_size=config.beam_size
+        )
+        self.struct_matcher = StructMatcher(
+            threshold=config.similarity_threshold
+        )
+        
+        # 知识图谱和规则
+        self.kg = None
+        self.rules = None
+        
+        self.logger.info("StructMatch系统初始化完成")
+    
+    def load_data(self, kg_path: str, rules_path: str):
+        """加载知识图谱和规则数据"""
+        self.logger.info("开始加载数据...")
+        
+        # 加载知识图谱
+        kg_loader = KGLoader()
+        self.kg = kg_loader.load_kg(kg_path)
+        
+        # 加载规则
+        rule_loader = RuleLoader()
+        self.rules = rule_loader.load_rules(rules_path)
+        
+        self.logger.info("数据加载完成")
+    
+    def get_structure_embedding(self, graph: nx.Graph) -> torch.Tensor:
+        """获取图的结构嵌入"""
+        # 提取motif特征
+        motif_embed = self.motif_extractor.extract_motifs(graph)
+        
+        # 获取GNN嵌入
+        if graph.number_of_nodes() > 0:
+            pyg_data = nx_to_pyg(graph)
+            pyg_data.batch = torch.zeros(pyg_data.num_nodes, dtype=torch.long)
+            
+            with torch.no_grad():
+                gnn_embed = self.gnn_encoder(pyg_data).squeeze(0)
+        else:
+            gnn_embed = torch.zeros(self.config.gnn_output_dim)
+        
+        # 融合嵌入
+        if len(motif_embed.shape) == 1:
+            motif_embed = motif_embed.unsqueeze(0)
+        if len(gnn_embed.shape) == 1:
+            gnn_embed = gnn_embed.unsqueeze(0)
+            
+        fused_embed = self.embed_fusion(motif_embed, gnn_embed)
+        return fused_embed.squeeze(0)
+    
+    def create_rule_graph(self, rule: Dict) -> nx.Graph:
+        """根据规则创建图结构"""
+        rule_graph = nx.Graph()
+        
+        # 解析规则结构
+        if 'premise' in rule:
+            premise = rule['premise']
+            if isinstance(premise, list):
+                # 处理三元组列表
+                for triple in premise:
+                    if len(triple) == 3:
+                        h, r, t = triple
+                        rule_graph.add_edge(h, t, relation=r)
+            elif isinstance(premise, dict):
+                # 处理结构化规则描述
+                if 'structure_type' in premise:
+                    rule_graph = self._create_structure_by_type(premise)
+        
+        return rule_graph
+    
+    def _create_structure_by_type(self, structure_desc: Dict) -> nx.Graph:
+        """根据结构类型创建图"""
+        graph = nx.Graph()
+        struct_type = structure_desc.get('structure_type', 'unknown')
+        
+        if struct_type == 'T_shape':
+            # T型结构: A-B-C, B-D
+            graph.add_edges_from([('A', 'B'), ('B', 'C'), ('B', 'D')])
+        elif struct_type == 'Y_shape':
+            # Y型结构: A-D, B-D, C-D
+            graph.add_edges_from([('A', 'D'), ('B', 'D'), ('C', 'D')])
+        elif struct_type == 'Fork':
+            # Fork结构: A-B, A-C, A-D
+            graph.add_edges_from([('A', 'B'), ('A', 'C'), ('A', 'D')])
+        elif struct_type == 'Triangle':
+            # 三角形: A-B-C-A
+            graph.add_edges_from([('A', 'B'), ('B', 'C'), ('C', 'A')])
+        elif struct_type == 'Path':
+            # 路径结构
+            length = structure_desc.get('length', 3)
+            nodes = [f'N{i}' for i in range(length)]
+            edges = [(nodes[i], nodes[i+1]) for i in range(length-1)]
+            graph.add_edges_from(edges)
+        
+        return graph
+    
+    def match_subgraph_to_rule(self, anchor: Tuple[str, str, str], 
+                              rule: Dict) -> Dict[str, Any]:
+        """将anchor扩展并匹配到规则"""
+        self.logger.info(f"开始处理anchor: {anchor}")
+        
+        # 创建规则图
+        rule_graph = self.create_rule_graph(rule)
+        if rule_graph.number_of_nodes() == 0:
+            self.logger.warning(f"无法创建规则图: {rule}")
+            return {'success': False, 'reason': 'Invalid rule structure'}
+        
+        # 获取规则嵌入
+        rule_embed = self.get_structure_embedding(rule_graph)
+        
+        # 扩展子图
+        try:
+            expanded_subgraph = self.graph_expander.expand_from_anchor(
+                anchor, self.kg, rule_embed, self
+            )
+        except Exception as e:
+            self.logger.error(f"子图扩展失败: {e}")
+            return {'success': False, 'reason': f'Expansion failed: {e}'}
+        
+        # 获取扩展子图的嵌入
+        subgraph_embed = self.get_structure_embedding(expanded_subgraph)
+        
+        # 结构匹配
+        is_match = self.struct_matcher.is_match(subgraph_embed, rule_embed)
+        match_score = self.struct_matcher.match_score(subgraph_embed, rule_embed)
+        
+        result = {
+            'success': True,
+            'anchor': anchor,
+            'rule': rule,
+            'expanded_subgraph': expanded_subgraph,
+            'is_match': is_match,
+            'match_score': match_score,
+            'subgraph_nodes': list(expanded_subgraph.nodes()),
+            'subgraph_edges': list(expanded_subgraph.edges()),
+            'rule_graph_info': {
+                'nodes': list(rule_graph.nodes()),
+                'edges': list(rule_graph.edges())
+            }
+        }
+        
+        self.logger.info(f"匹配结果: {is_match}, 得分: {match_score:.4f}")
+        return result
+    
+    def run_batch_matching(self, anchors: List[Tuple[str, str, str]], 
+                          rule_idx: int = 0) -> List[Dict[str, Any]]:
+        """批量处理anchor匹配"""
+        if not self.rules or rule_idx >= len(self.rules):
+            raise ValueError("Invalid rule index or no rules loaded")
+        
+        target_rule = self.rules[rule_idx]
+        results = []
+        
+        self.logger.info(f"开始批量匹配，共{len(anchors)}个anchor")
+        
+        for i, anchor in enumerate(anchors):
+            self.logger.info(f"处理第{i+1}/{len(anchors)}个anchor")
+            result = self.match_subgraph_to_rule(anchor, target_rule)
+            results.append(result)
+        
+        # 统计结果
+        successful_matches = sum(1 for r in results if r.get('is_match', False))
+        self.logger.info(f"批量匹配完成: {successful_matches}/{len(anchors)} 成功匹配")
+        
+        return results
+    
+    def save_results(self, results: List[Dict], output_path: str):
+        """保存结果到文件"""
+        import json
+        
+        # 处理不可序列化的对象
+        serializable_results = []
+        for result in results:
+            serializable_result = result.copy()
+            
+            # 转换NetworkX图为边列表
+            if 'expanded_subgraph' in serializable_result:
+                graph = serializable_result['expanded_subgraph']
+                serializable_result['expanded_subgraph'] = {
+                    'nodes': list(graph.nodes()),
+                    'edges': [(u, v, graph[u][v]) for u, v in graph.edges()]
+                }
+            
+            serializable_results.append(serializable_result)
+        
+        with open(output_path, 'w', encoding='utf-8') as f:
+            json.dump(serializable_results, f, indent=2, ensure_ascii=False)
+        
+        self.logger.info(f"结果已保存到: {output_path}")
+
+def create_sample_data():
+    """创建示例数据文件"""
+    # 创建示例知识图谱
+    kg_data = """A	friendOf	B
+B	friendOf	C
+C	friendOf	D
+A	worksWith	C
+B	worksWith	D
+A	livesIn	Tokyo
+B	livesIn	Tokyo
+C	livesIn	Osaka
+D	livesIn	Osaka
+E	friendOf	F
+F	friendOf	G
+E	worksWith	G"""
+    
+    # 创建示例规则
+    rules_data = [
+        {
+            "id": 1,
+            "name": "Friendship Triangle",
+            "premise": {
+                "structure_type": "Triangle",
+                "description": "三角形友谊关系"
+            },
+            "conclusion": "Strong social bond"
+        },
+        {
+            "id": 2,
+            "name": "Work-Friend Fork",
+            "premise": {
+                "structure_type": "Fork",
+                "description": "工作和友谊的分叉结构"
+            },
+            "conclusion": "Professional and personal connection"
+        },
+        {
+            "id": 3,
+            "name": "T-shaped Network",
+            "premise": {
+                "structure_type": "T_shape",
+                "description": "T型网络结构"
+            },
+            "conclusion": "Central connector role"
+        }
+    ]
+    
+    # 创建目录
+    os.makedirs("data", exist_ok=True)
+    
+    # 写入文件
+    with open("data/example_kg.txt", "w", encoding="utf-8") as f:
+        f.write(kg_data)
+    
+    with open("data/rules.json", "w", encoding="utf-8") as f:
+        json.dump(rules_data, f, indent=2, ensure_ascii=False)
+    
+    print("示例数据文件已创建:")
+    print("- data/example_kg.txt")
+    print("- data/rules.json")
 
 def main():
-    parser = argparse.ArgumentParser(description='GSN-PE 规则推理训练')
-    parser.add_argument('--rules_file', type=str, required=True, help='挖掘规则文件路径 (mined_rules.txt)')
-    parser.add_argument('--entities_dict', type=str, required=True, help='实体字典路径 (entities.dict)')
-    parser.add_argument('--relations_dict', type=str, required=True, help='关系字典路径 (relations.txt)')
-    parser.add_argument('--train_file', type=str, required=True, help='训练集三元组路径 (train.txt)')
-    parser.add_argument('--valid_file', type=str, required=True, help='验证集三元组路径 (valid.txt)')
-    parser.add_argument('--test_file', type=str, required=True, help='测试集三元组路径 (test.txt)')
-    parser.add_argument('--output_dir', type=str, default='./output', help='模型输出目录')
-    parser.add_argument('--epochs', type=int, default=50, help='训练轮数')
-    parser.add_argument('--batch_size', type=int, default=16, help='批次大小')
-    parser.add_argument('--lr', type=float, default=0.001, help='学习率')
-    parser.add_argument('--embed_dim', type=int, default=64, help='嵌入维度')
-    parser.add_argument('--max_subgraph_size', type=int, default=8, help='最大子图大小')
-    parser.add_argument('--seed', type=int, default=42, help='随机种子')
-    parser.add_argument('--device', type=str, default='cpu', help='计算设备 (cpu/cuda)')
-    args = parser.parse_args()
-
-    # 确保输出目录存在
-    os.makedirs(args.output_dir, exist_ok=True)
-    set_seed(args.seed)
-
-    # 加载字典文件
-    entity_vocab = load_entities(args.entities_dict)
-    predicate_vocab = load_relations(args.relations_dict)
-    print(f"加载实体字典: {len(entity_vocab)} 个实体")
-    print(f"加载关系字典: {len(predicate_vocab)} 种关系")
-
-    # 定义Motif模板（示例模板，需根据任务调整）
-    motif_templates = [
-        ['p1', 'p2'],          # 二元关系链
-        ['p1', 'p3', 'p2'],    # 三元关系链
-        ['p1', 'p2', 'p1']     # 对称关系
+    """主函数示例"""
+    # 设置配置
+    config = Config()
+    
+    # 创建示例数据
+    create_sample_data()
+    
+    # 初始化系统
+    system = StructMatchSystem(config)
+    
+    # 加载数据
+    try:
+        system.load_data("data/example_kg.txt", "data/rules.json")
+    except FileNotFoundError as e:
+        print(f"数据文件未找到: {e}")
+        print("请确保存在 data/example_kg.txt 和 data/rules.json 文件")
+        return
+    
+    # 定义测试anchor
+    test_anchors = [
+        ("A", "friendOf", "B"),
+        ("B", "worksWith", "D"),
+        ("E", "friendOf", "F"),
+        ("A", "livesIn", "Tokyo")
     ]
-
-    # 加载数据集
-    train_dataset = RuleDataset(
-        rules_file=args.rules_file,
-        kg_files=[args.train_file],
-        motif_templates=motif_templates,
-        predicate_vocab=predicate_vocab,
-        entity_vocab=entity_vocab,
-        max_subgraph_size=args.max_subgraph_size
-    )
-    valid_dataset = RuleDataset(
-        rules_file=args.rules_file,
-        kg_files=[args.valid_file],
-        motif_templates=motif_templates,
-        predicate_vocab=predicate_vocab,
-        entity_vocab=entity_vocab,
-        max_subgraph_size=args.max_subgraph_size
-    )
-    test_dataset = RuleDataset(
-        rules_file=args.rules_file,
-        kg_files=[args.test_file],
-        motif_templates=motif_templates,
-        predicate_vocab=predicate_vocab,
-        entity_vocab=entity_vocab,
-        max_subgraph_size=args.max_subgraph_size
-    )
-
-    # 创建数据加载器
-    train_loader = DataLoader(
-        train_dataset, 
-        batch_size=args.batch_size, 
-        shuffle=True, 
-        collate_fn=collate_fn
-    )
-    valid_loader = DataLoader(
-        valid_dataset, 
-        batch_size=args.batch_size, 
-        shuffle=False, 
-        collate_fn=collate_fn
-    )
-    test_loader = DataLoader(
-        test_dataset, 
-        batch_size=args.batch_size, 
-        shuffle=False, 
-        collate_fn=collate_fn
-    )
-
-    config = {
-        'entity_num': len(entity_vocab),
-        'relation_num': len(predicate_vocab),
-        'predicate_vocab_size': len(predicate_vocab),
-        'entity_vocab_size': len(entity_vocab),
-        'embed_dim': args.embed_dim,
-        'motif_num': len(motif_templates),
-        'motif_embed_dim': 64,
-        'output_dim': 128, 
-        'batch_size': args.batch_size,
-        'learning_rate': args.lr, 
-        'weight_decay': 0.0001, 
-        'max_subgraph_size': args.max_subgraph_size,
-        'device': args.device
-    }
-    with open(os.path.join(args.output_dir, 'config.json'), 'w') as f:
-        json.dump(config, f, indent=2)
-
-    # 初始化训练器
-    trainer = RuleAlignmentTrainer(config)
-    trainer.load_data(train_dataset, valid_dataset)
-
-    # 训练模型
-    best_valid_f1 = 0.0
-    best_model_path = os.path.join(args.output_dir, 'best_model.pt')
-    for epoch in range(args.epochs):
-        train_loss = trainer.train_epoch()
-        valid_metrics = evaluate(trainer, valid_loader, args.device)
-        
-        # 打印验证集结果
-        print(f"Epoch {epoch+1}/{args.epochs} | Loss: {train_loss:.4f}")
-        print(f"Valid F1: {valid_metrics['f1']:.4f} | Precision: {valid_metrics['precision']:.4f} | Recall: {valid_metrics['recall']:.4f}")
-        
-        # 保存最佳模型
-        if valid_metrics['f1'] > best_valid_f1:
-            best_valid_f1 = valid_metrics['f1']
-            torch.save({
-                'rule_encoder_state': trainer.rule_encoder.state_dict(),
-                'subgraph_encoder_state': trainer.subgraph_encoder.state_dict(),
-                'matcher_state': trainer.matcher.state_dict(),
-                'optimizer': trainer.optimizer.state_dict(),
-                'epoch': epoch,
-                'metrics': valid_metrics
-            }, best_model_path)
-            print(f"★ 保存最佳模型，F1: {best_valid_f1:.4f}")
-
-    # 加载最佳模型并评估测试集
-    checkpoint = torch.load(best_model_path)
-    trainer.rule_encoder.load_state_dict(checkpoint['rule_encoder_state'])
-    trainer.subgraph_encoder.load_state_dict(checkpoint['subgraph_encoder_state'])
-    trainer.matcher.load_state_dict(checkpoint['matcher_state'])
-    test_metrics = evaluate(trainer, test_loader, args.device)
-    iso_metrics = evaluate_subgraph_isomorphism(trainer, test_loader, args.device)
-
-    # 输出最终结果
-    print("\n=== 测试集评估结果 ===")
-    print(f"F1: {test_metrics['f1']:.4f} | AUC: {test_metrics['auc']:.4f}")
-    print(f"子图同构准确率: {iso_metrics['isomorphism_acc']:.4f}")
+    
+    # 运行匹配
+    print("\n开始结构匹配...")
+    results = system.run_batch_matching(test_anchors, rule_idx=0)
+    
+    # 显示结果
+    print("\n=== 匹配结果 ===")
+    for i, result in enumerate(results):
+        if result['success']:
+            print(f"\nAnchor {i+1}: {result['anchor']}")
+            print(f"匹配成功: {result['is_match']}")
+            print(f"匹配得分: {result['match_score']:.4f}")
+            print(f"扩展子图节点: {result['subgraph_nodes']}")
+            print(f"扩展子图边: {result['subgraph_edges']}")
+        else:
+            print(f"\nAnchor {i+1}: {result['anchor']} - 处理失败")
+            print(f"失败原因: {result.get('reason', 'Unknown')}")
     
     # 保存结果
-    with open(os.path.join(args.output_dir, 'test_results.json'), 'w') as f:
-        json.dump({
-            'classification': test_metrics,
-            'isomorphism': iso_metrics
-        }, f, indent=2)
-    print(f"结果已保存至 {args.output_dir}")
+    system.save_results(results, "results.json")
+    print(f"\n详细结果已保存到 results.json")
 
 if __name__ == "__main__":
-<<<<<<< HEAD
     main()
-=======
-    main()
->>>>>>> a9413a5ab9aa5a9dab19631a1ada3682449e4209
