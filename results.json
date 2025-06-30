@@ -1,18 +1,246 @@
-[
-  {
-    "success": false,
-    "reason": "Expansion failed: attempted relative import beyond top-level package"
-  },
-  {
-    "success": false,
-    "reason": "Expansion failed: attempted relative import beyond top-level package"
-  },
-  {
-    "success": false,
-    "reason": "Expansion failed: attempted relative import beyond top-level package"
-  },
-  {
-    "success": false,
-    "reason": "Expansion failed: attempted relative import beyond top-level package"
-  }
-]
+{
+  "matching_results": [
+    {
+      "rule_id": "rule_001",
+      "anchor": [
+        "A",
+        "friendOf",
+        "B"
+      ],
+      "is_matched": true,
+      "structure_score": 0.9670583605766296,
+      "semantic_score": 0.9972809553146362,
+      "final_score": 0.9761251211166382,
+      "processing_time": 0.30082201957702637,
+      "matched_subgraphs": [
+        {
+          "nodes": [
+            "A",
+            "B",
+            "E",
+            "D",
+            "Osaka",
+            "F",
+            "C"
+          ],
+          "edges": [
+            [
+              "A",
+              "B",
+              "friendOf"
+            ],
+            [
+              "A",
+              "D",
+              "knows"
+            ],
+            [
+              "B",
+              "E",
+              "knows"
+            ],
+            [
+              "E",
+              "F",
+              "friendOf"
+            ],
+            [
+              "D",
+              "Osaka",
+              "livesIn"
+            ],
+            [
+              "D",
+              "C",
+              "knows"
+            ]
+          ],
+          "structure_score": 0.9670583605766296,
+          "semantic_score": 0.9972809553146362,
+          "final_score": 0.9761251211166382
+        }
+      ]
+    },
+    {
+      "rule_id": "rule_001",
+      "anchor": [
+        "B",
+        "worksWith",
+        "D"
+      ],
+      "is_matched": true,
+      "structure_score": 0.9201902747154236,
+      "semantic_score": 0.9926040172576904,
+      "final_score": 0.941914439201355,
+      "processing_time": 0.2581958770751953,
+      "matched_subgraphs": [
+        {
+          "nodes": [
+            "B",
+            "D",
+            "C",
+            "Tokyo",
+            "A",
+            "Osaka"
+          ],
+          "edges": [
+            [
+              "B",
+              "D",
+              "worksWith"
+            ],
+            [
+              "B",
+              "Osaka",
+              "livesIn"
+            ],
+            [
+              "D",
+              "C",
+              "knows"
+            ],
+            [
+              "D",
+              "A",
+              "knows"
+            ],
+            [
+              "C",
+              "Tokyo",
+              "livesIn"
+            ],
+            [
+              "Tokyo",
+              "A",
+              "livesIn"
+            ]
+          ],
+          "structure_score": 0.9201902747154236,
+          "semantic_score": 0.9926040172576904,
+          "final_score": 0.941914439201355
+        }
+      ]
+    },
+    {
+      "rule_id": "rule_001",
+      "anchor": [
+        "E",
+        "friendOf",
+        "F"
+      ],
+      "is_matched": true,
+      "structure_score": 0.9788943529129028,
+      "semantic_score": 0.9971177577972412,
+      "final_score": 0.9843613505363464,
+      "processing_time": 0.166945219039917,
+      "matched_subgraphs": [
+        {
+          "nodes": [
+            "E",
+            "F",
+            "B",
+            "C",
+            "Tokyo",
+            "A",
+            "D"
+          ],
+          "edges": [
+            [
+              "E",
+              "F",
+              "friendOf"
+            ],
+            [
+              "E",
+              "B",
+              "knows"
+            ],
+            [
+              "B",
+              "C",
+              "worksWith"
+            ],
+            [
+              "C",
+              "Tokyo",
+              "livesIn"
+            ],
+            [
+              "Tokyo",
+              "A",
+              "livesIn"
+            ],
+            [
+              "A",
+              "D",
+              "knows"
+            ]
+          ],
+          "structure_score": 0.9788943529129028,
+          "semantic_score": 0.9971177577972412,
+          "final_score": 0.9843613505363464
+        }
+      ]
+    },
+    {
+      "rule_id": "rule_001",
+      "anchor": [
+        "A",
+        "livesIn",
+        "Tokyo"
+      ],
+      "is_matched": true,
+      "structure_score": 0.9365946054458618,
+      "semantic_score": 0.9922372102737427,
+      "final_score": 0.9532873630523682,
+      "processing_time": 0.19162702560424805,
+      "matched_subgraphs": [
+        {
+          "nodes": [
+            "A",
+            "Tokyo",
+            "D",
+            "C",
+            "B",
+            "Osaka"
+          ],
+          "edges": [
+            [
+              "A",
+              "Tokyo",
+              "livesIn"
+            ],
+            [
+              "A",
+              "D",
+              "knows"
+            ],
+            [
+              "A",
+              "B",
+              "friendOf"
+            ],
+            [
+              "D",
+              "C",
+              "knows"
+            ],
+            [
+              "D",
+              "Osaka",
+              "livesIn"
+            ],
+            [
+              "B",
+              "Osaka",
+              "livesIn"
+            ]
+          ],
+          "structure_score": 0.9365946054458618,
+          "semantic_score": 0.9922372102737427,
+          "final_score": 0.9532873630523682
+        }
+      ]
+    }
+  ]
+}

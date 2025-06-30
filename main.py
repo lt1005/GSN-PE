@@ -3,8 +3,10 @@ import sys
 import torch
 import logging
 import networkx as nx
-from typing import Dict, List, Tuple, Any
+from typing import Dict, List, Tuple, Any, Optional
 import json
+import time
+from dataclasses import dataclass
 
 # 导入所有模块
 from utils.config import Config
@@ -18,11 +20,35 @@ from struct_embed.embed_fusion import EmbedFusion
 from matcher.graph_expander import GraphExpander
 from matcher.struct_matcher import StructMatcher
 from matcher.scoring import ScoringFunction
+from matcher.semantic_verifier import SemanticVerifier
 from trainer.train_gnn import GNNTrainer
 from trainer.contrastive_loss import ContrastiveLoss
 
+@dataclass
+class MatchingResult:
+    """匹配结果数据结构"""
+    rule_id: str
+    anchor: Tuple[str, str, str]
+    matched_subgraphs: List[Dict]
+    structure_score: float
+    semantic_score: float
+    final_score: float
+    is_matched: bool
+    processing_time: float
+
+@dataclass
+class EvaluationMetrics:
+    """评估指标数据结构"""
+    structure_accuracy: float = 0.0
+    isomorphic_accuracy: float = 0.0
+    semantic_accuracy: float = 0.0
+    e2e_accuracy: float = 0.0
+    recall: float = 0.0
+    precision: float = 0.0
+    avg_processing_time: float = 0.0
+
 class StructMatchSystem:
-    """StructMatch主系统"""
+    """StructMatch主系统 - 基于SRS重构"""
     
     def __init__(self, config: Config):
         self.config = config
@@ -47,10 +73,19 @@ class StructMatchSystem:
         self.struct_matcher = StructMatcher(
             threshold=config.similarity_threshold
         )
+        self.scoring_function = ScoringFunction()
+        self.semantic_verifier = SemanticVerifier(
+            entity_encoder=None,  # 需要根据实际语义模型初始化
+            relation_encoder=None,
+            threshold=config.semantic_threshold
+        )
         
         # 知识图谱和规则
         self.kg = None
         self.rules = None
+        
+        # 评估指标
+        self.evaluation_metrics = EvaluationMetrics()
         
         self.logger.info("StructMatch系统初始化完成")
     
@@ -58,233 +93,326 @@ class StructMatchSystem:
         """加载知识图谱和规则数据"""
         self.logger.info("开始加载数据...")
         
-        # 加载知识图谱
-        kg_loader = KGLoader()
-        self.kg = kg_loader.load_kg(kg_path)
-        
-        # 加载规则
-        rule_loader = RuleLoader()
-        self.rules = rule_loader.load_rules(rules_path)
-        
-        self.logger.info("数据加载完成")
+        try:
+            # 加载知识图谱
+            kg_loader = KGLoader()
+            self.kg = kg_loader.load_kg(kg_path)
+            
+            # 加载规则
+            rule_loader = RuleLoader()
+            self.rules = rule_loader.load_rules(rules_path)
+            
+            self.logger.info("数据加载完成")
+        except Exception as e:
+            self.logger.error(f"数据加载失败: {e}")
+            raise
     
     def get_structure_embedding(self, graph: nx.Graph) -> torch.Tensor:
         """获取图的结构嵌入"""
-        # 提取motif特征
-        motif_embed = self.motif_extractor.extract_motifs(graph)
-        
-        # 获取GNN嵌入
-        if graph.number_of_nodes() > 0:
-            pyg_data = nx_to_pyg(graph)
-            pyg_data.batch = torch.zeros(pyg_data.num_nodes, dtype=torch.long)
+        try:
+            # 提取motif特征
+            motif_embed = self.motif_extractor.extract_motifs(graph)
             
-            with torch.no_grad():
-                gnn_embed = self.gnn_encoder(pyg_data).squeeze(0)
-        else:
-            gnn_embed = torch.zeros(self.config.gnn_output_dim)
-        
-        # 融合嵌入
-        if len(motif_embed.shape) == 1:
-            motif_embed = motif_embed.unsqueeze(0)
-        if len(gnn_embed.shape) == 1:
-            gnn_embed = gnn_embed.unsqueeze(0)
+            # 获取GNN嵌入
+            if graph.number_of_nodes() > 0:
+                pyg_data = nx_to_pyg(graph)
+                pyg_data.batch = torch.zeros(pyg_data.num_nodes, dtype=torch.long)
+                
+                with torch.no_grad():
+                    gnn_embed = self.gnn_encoder(pyg_data).squeeze(0)
+            else:
+                gnn_embed = torch.zeros(self.config.gnn_output_dim)
             
-        fused_embed = self.embed_fusion(motif_embed, gnn_embed)
-        return fused_embed.squeeze(0)
+            # 融合嵌入
+            if len(motif_embed.shape) == 1:
+                motif_embed = motif_embed.unsqueeze(0)
+            if len(gnn_embed.shape) == 1:
+                gnn_embed = gnn_embed.unsqueeze(0)
+                
+            fused_embed = self.embed_fusion(motif_embed, gnn_embed)
+            return fused_embed.squeeze(0)
+        except Exception as e:
+            self.logger.error(f"结构嵌入提取失败: {e}")
+            raise
     
-    def create_rule_graph(self, rule: Dict) -> nx.Graph:
-        """根据规则创建图结构"""
-        rule_graph = nx.Graph()
-        
-        # 解析规则结构
-        if 'premise' in rule:
-            premise = rule['premise']
-            if isinstance(premise, list):
-                # 处理三元组列表
-                for triple in premise:
-                    if len(triple) == 3:
-                        h, r, t = triple
-                        rule_graph.add_edge(h, t, relation=r)
-            elif isinstance(premise, dict):
-                # 处理结构化规则描述
-                if 'structure_type' in premise:
-                    rule_graph = self._create_structure_by_type(premise)
-        
-        return rule_graph
+    def get_semantic_embedding(self, graph: nx.Graph) -> torch.Tensor:
+        """获取图的语义嵌入"""
+        try:
+            return self.semantic_verifier.encode_semantic(graph)
+        except Exception as e:
+            self.logger.error(f"语义嵌入提取失败: {e}")
+            # 返回零向量，避免语义验证误接受
+            return torch.zeros(self.config.semantic_dim)
     
-    def _create_structure_by_type(self, structure_desc: Dict) -> nx.Graph:
-        """根据结构类型创建图"""
-        graph = nx.Graph()
-        struct_type = structure_desc.get('structure_type', 'unknown')
-        
-        if struct_type == 'T_shape':
-            # T型结构: A-B-C, B-D
-            graph.add_edges_from([('A', 'B'), ('B', 'C'), ('B', 'D')])
-        elif struct_type == 'Y_shape':
-            # Y型结构: A-D, B-D, C-D
-            graph.add_edges_from([('A', 'D'), ('B', 'D'), ('C', 'D')])
-        elif struct_type == 'Fork':
-            # Fork结构: A-B, A-C, A-D
-            graph.add_edges_from([('A', 'B'), ('A', 'C'), ('A', 'D')])
-        elif struct_type == 'Triangle':
-            # 三角形: A-B-C-A
-            graph.add_edges_from([('A', 'B'), ('B', 'C'), ('C', 'A')])
-        elif struct_type == 'Path':
-            # 路径结构
-            length = structure_desc.get('length', 3)
-            nodes = [f'N{i}' for i in range(length)]
-            edges = [(nodes[i], nodes[i+1]) for i in range(length-1)]
-            graph.add_edges_from(edges)
-        
-        return graph
+    def precompute_rule_embeddings(self, rule: Dict) -> Tuple[torch.Tensor, torch.Tensor]:
+        """预计算规则的结构嵌入和语义嵌入"""
+        try:
+            # 构建规则前件图
+            rule_graph = nx.Graph()
+            for triple in rule['premise']:
+                h, r, t = triple['h'], triple['r'], triple['t']
+                rule_graph.add_edge(h, t, relation=r)
+            
+            # 计算结构嵌入
+            struct_embed = self.get_structure_embedding(rule_graph)
+            
+            # 计算语义嵌入
+            semantic_embed = self.get_semantic_embedding(rule_graph)
+            
+            return struct_embed, semantic_embed
+        except Exception as e:
+            self.logger.error(f"规则嵌入预计算失败: {e}")
+            raise
     
     def match_subgraph_to_rule(self, anchor: Tuple[str, str, str], 
-                              rule: Dict) -> Dict[str, Any]:
-        """将anchor扩展并匹配到规则"""
-        self.logger.info(f"开始处理anchor: {anchor}")
+                              target_rule: Dict) -> MatchingResult:
+        """匹配单个anchor到规则"""
+        start_time = time.time()
         
-        # 创建规则图
-        rule_graph = self.create_rule_graph(rule)
-        if rule_graph.number_of_nodes() == 0:
-            self.logger.warning(f"无法创建规则图: {rule}")
-            return {'success': False, 'reason': 'Invalid rule structure'}
-        
-        # 获取规则嵌入
-        rule_embed = self.get_structure_embedding(rule_graph)
-        
-        # 扩展子图
         try:
-            expanded_subgraph = self.graph_expander.expand_from_anchor(
-                anchor, self.kg, rule_embed, self
+            # 预计算规则嵌入
+            rule_struct_embed, rule_semantic_embed = self.precompute_rule_embeddings(target_rule)
+            
+            # 1. 结构匹配先行 - 子图扩展
+            if self.kg is None:
+                raise ValueError("知识图谱未加载")
+            
+            candidate_subgraphs = self.graph_expander.expand_from_anchor(
+                anchor, self.kg, rule_struct_embed, self
             )
+            
+            if not candidate_subgraphs:
+                return MatchingResult(
+                    rule_id=target_rule.get('rule_id', 'unknown'),
+                    anchor=anchor,
+                    matched_subgraphs=[],
+                    structure_score=0.0,
+                    semantic_score=0.0,
+                    final_score=0.0,
+                    is_matched=False,
+                    processing_time=time.time() - start_time
+                )
+            
+            # 2. 结构匹配筛选
+            struct_matched_subgraphs = []
+            for subgraph in candidate_subgraphs:
+                struct_score = self.scoring_function.similarity_score(
+                    self.get_structure_embedding(subgraph), 
+                    rule_struct_embed
+                )
+                
+                if struct_score >= self.config.similarity_threshold:
+                    struct_matched_subgraphs.append((subgraph, struct_score))
+            
+            if not struct_matched_subgraphs:
+                return MatchingResult(
+                    rule_id=target_rule.get('rule_id', 'unknown'),
+                    anchor=anchor,
+                    matched_subgraphs=[],
+                    structure_score=0.0,
+                    semantic_score=0.0,
+                    final_score=0.0,
+                    is_matched=False,
+                    processing_time=time.time() - start_time
+                )
+            
+            # 3. 语义验证紧随其后
+            final_matched_subgraphs = []
+            best_semantic_score = 0.0
+            
+            for subgraph, struct_score in struct_matched_subgraphs:
+                sem_pass, sem_score = self.semantic_verifier.semantic_verify(
+                    subgraph, rule_semantic_embed
+                )
+                
+                if sem_pass:
+                    final_score = 0.7 * struct_score + 0.3 * sem_score  # 加权融合
+                    final_matched_subgraphs.append({
+                        'nodes': list(subgraph.nodes()),
+                        'edges': [(u, v, subgraph[u][v].get('relation', 'unknown')) 
+                                 for u, v in subgraph.edges()],
+                        'structure_score': struct_score,
+                        'semantic_score': sem_score,
+                        'final_score': final_score
+                    })
+                    best_semantic_score = max(best_semantic_score, sem_score)
+            
+            # 返回结果
+            is_matched = len(final_matched_subgraphs) > 0
+            avg_struct_score = sum(s[1] for s in struct_matched_subgraphs) / len(struct_matched_subgraphs) if struct_matched_subgraphs else 0.0
+            
+            return MatchingResult(
+                rule_id=target_rule.get('rule_id', 'unknown'),
+                anchor=anchor,
+                matched_subgraphs=final_matched_subgraphs,
+                structure_score=avg_struct_score,
+                semantic_score=best_semantic_score,
+                final_score=0.7 * avg_struct_score + 0.3 * best_semantic_score if is_matched else 0.0,
+                is_matched=is_matched,
+                processing_time=time.time() - start_time
+            )
+            
         except Exception as e:
-            self.logger.error(f"子图扩展失败: {e}")
-            return {'success': False, 'reason': f'Expansion failed: {e}'}
-        
-        # 获取扩展子图的嵌入
-        subgraph_embed = self.get_structure_embedding(expanded_subgraph)
-        
-        # 结构匹配
-        is_match = self.struct_matcher.is_match(subgraph_embed, rule_embed)
-        match_score = self.struct_matcher.match_score(subgraph_embed, rule_embed)
-        
-        result = {
-            'success': True,
-            'anchor': anchor,
-            'rule': rule,
-            'expanded_subgraph': expanded_subgraph,
-            'is_match': is_match,
-            'match_score': match_score,
-            'subgraph_nodes': list(expanded_subgraph.nodes()),
-            'subgraph_edges': list(expanded_subgraph.edges()),
-            'rule_graph_info': {
-                'nodes': list(rule_graph.nodes()),
-                'edges': list(rule_graph.edges())
-            }
-        }
-        
-        self.logger.info(f"匹配结果: {is_match}, 得分: {match_score:.4f}")
-        return result
+            self.logger.error(f"子图匹配失败: {e}")
+            return MatchingResult(
+                rule_id=target_rule.get('rule_id', 'unknown'),
+                anchor=anchor,
+                matched_subgraphs=[],
+                structure_score=0.0,
+                semantic_score=0.0,
+                final_score=0.0,
+                is_matched=False,
+                processing_time=time.time() - start_time
+            )
     
     def run_batch_matching(self, anchors: List[Tuple[str, str, str]], 
-                          rule_idx: int = 0) -> List[Dict[str, Any]]:
-        """批量处理anchor匹配"""
+                          rule_idx: int = 0) -> List[MatchingResult]:
+        """批量匹配anchors到指定规则"""
         if not self.rules or rule_idx >= len(self.rules):
-            raise ValueError("Invalid rule index or no rules loaded")
+            raise ValueError(f"规则索引 {rule_idx} 超出范围")
         
         target_rule = self.rules[rule_idx]
-        results = []
-        
         self.logger.info(f"开始批量匹配，共{len(anchors)}个anchor")
         
+        results = []
         for i, anchor in enumerate(anchors):
             self.logger.info(f"处理第{i+1}/{len(anchors)}个anchor")
+            self.logger.info(f"开始处理anchor: {anchor}")
+            
             result = self.match_subgraph_to_rule(anchor, target_rule)
             results.append(result)
+            
+            if result.is_matched:
+                self.logger.info(f"匹配成功: {result.is_matched}")
+                self.logger.info(f"匹配得分: {result.final_score:.4f}")
+                if result.matched_subgraphs:
+                    subgraph = result.matched_subgraphs[0]
+                    self.logger.info(f"扩展子图节点: {subgraph['nodes']}")
+                    self.logger.info(f"扩展子图边: {subgraph['edges']}")
+            else:
+                self.logger.info(f"匹配失败，处理时间: {result.processing_time:.4f}秒")
         
-        # 统计结果
-        successful_matches = sum(1 for r in results if r.get('is_match', False))
-        self.logger.info(f"批量匹配完成: {successful_matches}/{len(anchors)} 成功匹配")
-        
+        self.logger.info(f"批量匹配完成: {sum(1 for r in results if r.is_matched)}/{len(results)} 成功匹配")
         return results
     
-    def save_results(self, results: List[Dict], output_path: str):
-        """保存结果到文件"""
-        import json
+    def evaluate_performance(self, results: List[MatchingResult], 
+                           ground_truth: Optional[List[bool]] = None) -> EvaluationMetrics:
+        """评估系统性能"""
+        if not results:
+            return EvaluationMetrics()
         
-        # 处理不可序列化的对象
-        serializable_results = []
-        for result in results:
-            serializable_result = result.copy()
+        # 计算平均处理时间
+        avg_time = sum(r.processing_time for r in results) / len(results)
+        
+        # 如果有ground truth，计算准确率等指标
+        if ground_truth and len(ground_truth) == len(results):
+            correct_matches = sum(1 for r, gt in zip(results, ground_truth) 
+                                if r.is_matched == gt)
+            accuracy = correct_matches / len(results)
             
-            # 转换NetworkX图为边列表
-            if 'expanded_subgraph' in serializable_result:
-                graph = serializable_result['expanded_subgraph']
-                serializable_result['expanded_subgraph'] = {
-                    'nodes': list(graph.nodes()),
-                    'edges': [(u, v, graph[u][v]) for u, v in graph.edges()]
+            # 计算精确率和召回率
+            predicted_positives = sum(1 for r in results if r.is_matched)
+            actual_positives = sum(ground_truth)
+            
+            precision = (sum(1 for r, gt in zip(results, ground_truth) 
+                           if r.is_matched and gt) / predicted_positives 
+                        if predicted_positives > 0 else 0.0)
+            
+            recall = (sum(1 for r, gt in zip(results, ground_truth) 
+                         if r.is_matched and gt) / actual_positives 
+                     if actual_positives > 0 else 0.0)
+            
+            return EvaluationMetrics(
+                e2e_accuracy=accuracy,
+                precision=precision,
+                recall=recall,
+                avg_processing_time=avg_time
+            )
+        else:
+            # 没有ground truth时，只返回处理时间
+            return EvaluationMetrics(avg_processing_time=avg_time)
+    
+    def save_results(self, results: List[MatchingResult], output_path: str = "results.json"):
+        """保存匹配结果"""
+        output_data = {
+            "matching_results": [
+                {
+                    "rule_id": r.rule_id,
+                    "anchor": r.anchor,
+                    "is_matched": r.is_matched,
+                    "structure_score": float(r.structure_score),
+                    "semantic_score": float(r.semantic_score),
+                    "final_score": float(r.final_score),
+                    "processing_time": float(r.processing_time),
+                    "matched_subgraphs": [
+                        {
+                            "nodes": subgraph["nodes"],
+                            "edges": subgraph["edges"],
+                            "structure_score": float(subgraph["structure_score"]),
+                            "semantic_score": float(subgraph["semantic_score"]),
+                            "final_score": float(subgraph["final_score"])
+                        }
+                        for subgraph in r.matched_subgraphs
+                    ]
                 }
-            
-            serializable_results.append(serializable_result)
+                for r in results
+            ]
+        }
         
         with open(output_path, 'w', encoding='utf-8') as f:
-            json.dump(serializable_results, f, indent=2, ensure_ascii=False)
+            json.dump(output_data, f, indent=2, ensure_ascii=False)
         
         self.logger.info(f"结果已保存到: {output_path}")
 
 def create_sample_data():
     """创建示例数据文件"""
     # 创建示例知识图谱
-    kg_data = """A	friendOf	B
-B	friendOf	C
-C	friendOf	D
-A	worksWith	C
-B	worksWith	D
-A	livesIn	Tokyo
-B	livesIn	Tokyo
-C	livesIn	Osaka
-D	livesIn	Osaka
-E	friendOf	F
-F	friendOf	G
-E	worksWith	G"""
+    kg_data = [
+        "A\tfriendOf\tB",
+        "B\tworksWith\tC", 
+        "D\tknows\tC",
+        "A\tlivesIn\tTokyo",
+        "B\tlivesIn\tOsaka",
+        "C\tlivesIn\tTokyo",
+        "D\tlivesIn\tOsaka",
+        "E\tfriendOf\tF",
+        "F\tworksWith\tG",
+        "G\tknows\tH",
+        "A\tknows\tD",
+        "B\tknows\tE"
+    ]
+    
+    with open("data/example_kg.txt", "w", encoding="utf-8") as f:
+        f.write("\n".join(kg_data))
     
     # 创建示例规则
     rules_data = [
         {
-            "id": 1,
-            "name": "Friendship Triangle",
-            "premise": {
-                "structure_type": "Triangle",
-                "description": "三角形友谊关系"
-            },
-            "conclusion": "Strong social bond"
+            "rule_id": "rule_001",
+            "premise": [
+                {"h": "A", "r": "friendOf", "t": "B"},
+                {"h": "B", "r": "worksWith", "t": "C"},
+                {"h": "D", "r": "knows", "t": "C"}
+            ],
+            "conclusion": {"h": "A", "r": "relatedTo", "t": "D"}
         },
         {
-            "id": 2,
-            "name": "Work-Friend Fork",
-            "premise": {
-                "structure_type": "Fork",
-                "description": "工作和友谊的分叉结构"
-            },
-            "conclusion": "Professional and personal connection"
+            "rule_id": "rule_002", 
+            "premise": [
+                {"h": "X", "r": "friendOf", "t": "Y"},
+                {"h": "Y", "r": "livesIn", "t": "Z"}
+            ],
+            "conclusion": {"h": "X", "r": "knows", "t": "Z"}
         },
         {
-            "id": 3,
-            "name": "T-shaped Network",
-            "premise": {
-                "structure_type": "T_shape",
-                "description": "T型网络结构"
-            },
-            "conclusion": "Central connector role"
+            "rule_id": "rule_003",
+            "premise": [
+                {"h": "P", "r": "worksWith", "t": "Q"},
+                {"h": "Q", "r": "knows", "t": "R"}
+            ],
+            "conclusion": {"h": "P", "r": "relatedTo", "t": "R"}
         }
     ]
-    
-    # 创建目录
-    os.makedirs("data", exist_ok=True)
-    
-    # 写入文件
-    with open("data/example_kg.txt", "w", encoding="utf-8") as f:
-        f.write(kg_data)
     
     with open("data/rules.json", "w", encoding="utf-8") as f:
         json.dump(rules_data, f, indent=2, ensure_ascii=False)
@@ -294,54 +422,60 @@ E	worksWith	G"""
     print("- data/rules.json")
 
 def main():
-    """主函数示例"""
-    # 设置配置
-    config = Config()
-    
+    """主函数"""
     # 创建示例数据
     create_sample_data()
     
     # 初始化系统
+    config = Config()
     system = StructMatchSystem(config)
     
     # 加载数据
-    try:
-        system.load_data("data/example_kg.txt", "data/rules.json")
-    except FileNotFoundError as e:
-        print(f"数据文件未找到: {e}")
-        print("请确保存在 data/example_kg.txt 和 data/rules.json 文件")
-        return
+    system.load_data("data/example_kg.txt", "data/rules.json")
     
-    # 定义测试anchor
+    print("\n开始结构匹配...")
+    
+    # 定义测试anchors
     test_anchors = [
-        ("A", "friendOf", "B"),
-        ("B", "worksWith", "D"),
-        ("E", "friendOf", "F"),
-        ("A", "livesIn", "Tokyo")
+        ('A', 'friendOf', 'B'),
+        ('B', 'worksWith', 'D'),
+        ('E', 'friendOf', 'F'),
+        ('A', 'livesIn', 'Tokyo')
     ]
     
-    # 运行匹配
-    print("\n开始结构匹配...")
+    # 执行批量匹配
     results = system.run_batch_matching(test_anchors, rule_idx=0)
     
-    # 显示结果
-    print("\n=== 匹配结果 ===")
-    for i, result in enumerate(results):
-        if result['success']:
-            print(f"\nAnchor {i+1}: {result['anchor']}")
-            print(f"匹配成功: {result['is_match']}")
-            print(f"匹配得分: {result['match_score']:.4f}")
-            print(f"扩展子图节点: {result['subgraph_nodes']}")
-            print(f"扩展子图边: {result['subgraph_edges']}")
-        else:
-            if 'anchor' in result:
-                print(f"\nAnchor {i+1}: {result['anchor']} - 处理失败")
-            else:
-                print(f"\nAnchor {i+1}: 未知anchor - 处理失败，result内容: {result}")
+    # 评估性能
+    metrics = system.evaluate_performance(results)
+    print(f"\n性能评估:")
+    print(f"平均处理时间: {metrics.avg_processing_time:.4f}秒")
+    if metrics.e2e_accuracy > 0:
+        print(f"端到端准确率: {metrics.e2e_accuracy:.4f}")
+        print(f"精确率: {metrics.precision:.4f}")
+        print(f"召回率: {metrics.recall:.4f}")
     
     # 保存结果
-    system.save_results(results, "results.json")
-    print(f"\n详细结果已保存到 results.json")
+    system.save_results(results)
+    
+    # 输出详细结果
+    print(f"\n详细匹配结果:")
+    for i, result in enumerate(results):
+        if result.is_matched:
+            print(f"\nAnchor {i+1}: {result.anchor}")
+            print(f"匹配成功: {result.is_matched}")
+            print(f"结构得分: {result.structure_score:.4f}")
+            print(f"语义得分: {result.semantic_score:.4f}")
+            print(f"最终得分: {result.final_score:.4f}")
+            if result.matched_subgraphs:
+                subgraph = result.matched_subgraphs[0]
+                print(f"匹配子图节点: {subgraph['nodes']}")
+                print(f"匹配子图边: {subgraph['edges']}")
+        else:
+            if 'anchor' in result.__dict__:
+                print(f"\nAnchor {i+1}: {result.anchor} - 处理失败")
+            else:
+                print(f"\nAnchor {i+1}: 未知anchor - 处理失败，result内容: {result}")
 
 if __name__ == "__main__":
     main()

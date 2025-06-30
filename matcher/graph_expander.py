@@ -15,7 +15,7 @@ class GraphExpander:
     def expand_from_anchor(self, anchor: Tuple[str, str, str], 
                           kg: nx.MultiDiGraph, 
                           target_embed: torch.Tensor,
-                          embed_model) -> nx.Graph:
+                          embed_model) -> List[nx.Graph]:
         """从anchor三元组开始扩展子图"""
         h, r, t = anchor
         
@@ -50,11 +50,11 @@ class GraphExpander:
                 temp_embed = self._get_graph_embedding(temp_subgraph, embed_model)
                 temp_score = self._similarity_score(temp_embed, target_embed)
                 
-                heapq.heappush(best_expansions, (-temp_score, edge, temp_subgraph))
+                heapq.heappush(best_expansions, (-temp_score, edge, id(temp_subgraph), temp_subgraph))
             
             # 选择最佳扩展
             if best_expansions:
-                _, best_edge, best_subgraph = heapq.heappop(best_expansions)
+                _, best_edge, _, best_subgraph = heapq.heappop(best_expansions)
                 current_subgraph = best_subgraph
                 visited_edges.add(best_edge)
                 
@@ -62,7 +62,8 @@ class GraphExpander:
             else:
                 break
         
-        return current_subgraph
+        # 返回候选子图列表（这里简化处理，只返回最终扩展的子图）
+        return [current_subgraph]
     
     def _find_expansion_edges(self, subgraph: nx.Graph, 
                             kg: nx.MultiDiGraph, 
@@ -93,21 +94,48 @@ class GraphExpander:
         return candidates
     
     def _get_graph_embedding(self, graph: nx.Graph, embed_model) -> torch.Tensor:
-        """获取图的嵌入表示"""
-        # 这里需要调用嵌入模型
-        # 简化实现，实际需要与motif提取器和GNN结合
-        from ..utils.graph_utils import nx_to_pyg
-        from ..struct_embed.motif_extractor import MotifExtractor
+        """获取图的嵌入表示 - 返回融合后的结构嵌入"""
+        from utils.graph_utils import nx_to_pyg
+        from struct_embed.motif_extractor import MotifExtractor
         
-        motif_extractor = MotifExtractor()
-        motif_embed = motif_extractor.extract_motifs(graph)
-        
-        # 如果图为空，返回零向量
-        if graph.number_of_nodes() == 0:
-            return torch.zeros_like(motif_embed)
-        
-        return motif_embed
+        try:
+            # 提取motif特征
+            motif_extractor = MotifExtractor()
+            motif_embed = motif_extractor.extract_motifs(graph)
+            
+            # 如果图为空，返回零向量
+            if graph.number_of_nodes() == 0:
+                return torch.zeros(embed_model.embed_fusion.projection.out_features)
+            
+            # 获取GNN嵌入
+            pyg_data = nx_to_pyg(graph)
+            pyg_data.batch = torch.zeros(pyg_data.num_nodes, dtype=torch.long)
+            
+            with torch.no_grad():
+                gnn_embed = embed_model.gnn_encoder(pyg_data).squeeze(0)
+            
+            # 融合嵌入
+            if len(motif_embed.shape) == 1:
+                motif_embed = motif_embed.unsqueeze(0)
+            if len(gnn_embed.shape) == 1:
+                gnn_embed = gnn_embed.unsqueeze(0)
+            
+            fused_embed = embed_model.embed_fusion(motif_embed, gnn_embed)
+            return fused_embed.squeeze(0)
+            
+        except Exception as e:
+            logging.error(f"图嵌入提取失败: {e}")
+            # 返回零向量
+            return torch.zeros(embed_model.embed_fusion.projection.out_features)
     
     def _similarity_score(self, embed1: torch.Tensor, embed2: torch.Tensor) -> float:
-        """计算嵌入相似度"""
-        return torch.cosine_similarity(embed1.unsqueeze(0), embed2.unsqueeze(0)).item()
+        """计算两个嵌入向量的相似度"""
+        try:
+            # 使用余弦相似度
+            similarity = torch.nn.functional.cosine_similarity(
+                embed1.unsqueeze(0), embed2.unsqueeze(0), dim=1
+            )
+            return similarity.item()
+        except Exception as e:
+            logging.error(f"相似度计算失败: {e}")
+            return 0.0
