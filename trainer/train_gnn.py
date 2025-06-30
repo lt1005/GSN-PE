@@ -1,8 +1,10 @@
 import torch
 import torch.optim as optim
 from torch.utils.data import DataLoader
+from typing import Dict, List
 import logging
 from tqdm import tqdm
+import json
 
 class GNNTrainer:
     """GNN结构嵌入训练器"""

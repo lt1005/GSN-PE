@@ -1,0 +1,12 @@
+A	friendOf	B
+B	friendOf	C
+C	friendOf	D
+A	worksWith	C
+B	worksWith	D
+A	livesIn	Tokyo
+B	livesIn	Tokyo
+C	livesIn	Osaka
+D	livesIn	Osaka
+E	friendOf	F
+F	friendOf	G
+E	worksWith	G

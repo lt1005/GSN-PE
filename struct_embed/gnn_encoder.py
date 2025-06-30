@@ -70,6 +70,12 @@ class GNNEncoder(nn.Module):
         """前向传播"""
         x, edge_index, batch = data.x, data.edge_index, data.batch
         
+        print("x shape:", x.shape)
+        print("edge_index shape:", edge_index.shape)
+        
+        if x.dim() == 1:
+            x = x.unsqueeze(-1)
+        
         # GNN层
         for i, conv in enumerate(self.convs):
             x = conv(x, edge_index)

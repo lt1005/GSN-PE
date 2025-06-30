@@ -4,6 +4,7 @@ import torch
 import logging
 import networkx as nx
 from typing import Dict, List, Tuple, Any
+import json
 
 # 导入所有模块
 from utils.config import Config
@@ -333,8 +334,10 @@ def main():
             print(f"扩展子图节点: {result['subgraph_nodes']}")
             print(f"扩展子图边: {result['subgraph_edges']}")
         else:
-            print(f"\nAnchor {i+1}: {result['anchor']} - 处理失败")
-            print(f"失败原因: {result.get('reason', 'Unknown')}")
+            if 'anchor' in result:
+                print(f"\nAnchor {i+1}: {result['anchor']} - 处理失败")
+            else:
+                print(f"\nAnchor {i+1}: 未知anchor - 处理失败，result内容: {result}")
     
     # 保存结果
     system.save_results(results, "results.json")

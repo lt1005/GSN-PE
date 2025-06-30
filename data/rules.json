@@ -1,0 +1,29 @@
+[
+  {
+    "id": 1,
+    "name": "Friendship Triangle",
+    "premise": {
+      "structure_type": "Triangle",
+      "description": "三角形友谊关系"
+    },
+    "conclusion": "Strong social bond"
+  },
+  {
+    "id": 2,
+    "name": "Work-Friend Fork",
+    "premise": {
+      "structure_type": "Fork",
+      "description": "工作和友谊的分叉结构"
+    },
+    "conclusion": "Professional and personal connection"
+  },
+  {
+    "id": 3,
+    "name": "T-shaped Network",
+    "premise": {
+      "structure_type": "T_shape",
+      "description": "T型网络结构"
+    },
+    "conclusion": "Central connector role"
+  }
+]
