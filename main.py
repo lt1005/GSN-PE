@@ -7,6 +7,8 @@ from typing import Dict, List, Tuple, Any, Optional
 import json
 import time
 from dataclasses import dataclass
+import argparse
+from collections import defaultdict
 
 # 导入所有模块
 from utils.config import Config
@@ -421,6 +423,63 @@ def create_sample_data():
     print("- data/example_kg.txt")
     print("- data/rules.json")
 
+def run_batch_rule_inference(system, rules_path, instances_path):
+    """批量规则推理与评估"""
+    with open(rules_path, 'r', encoding='utf-8') as f:
+        rules = json.load(f)
+    with open(instances_path, 'r', encoding='utf-8') as f:
+        instances = json.load(f)
+    # 按rule_id分组实例
+    rule2instances = defaultdict(list)
+    for inst in instances:
+        rule2instances[inst['rule_id']].append(inst)
+    all_results = []
+    all_gt = []
+    for rule in rules:
+        rule_id = rule['rule_id']
+        premise = rule['premise']
+        conclusion = rule['conclusion']
+        rule_instances = rule2instances.get(rule_id, [])
+        # 构建规则图
+        rule_graph = nx.Graph()
+        for triple in premise:
+            rule_graph.add_edge(triple['h'], triple['t'], relation=triple['r'])
+        # 预计算结构/语义嵌入
+        struct_embed = system.get_structure_embedding(rule_graph)
+        semantic_embed = system.get_semantic_embedding(rule_graph)
+        for inst in rule_instances:
+            # 构建实例前提子图
+            subgraph = nx.Graph()
+            for h, r, t in inst['premise_instance']:
+                subgraph.add_edge(h, t, relation=r)
+            # 结构匹配
+            struct_score = system.scoring_function.similarity_score(
+                system.get_structure_embedding(subgraph), struct_embed)
+            struct_pass = struct_score >= system.config.similarity_threshold
+            # 语义验证
+            sem_pass, sem_score = system.semantic_verifier.semantic_verify(subgraph, semantic_embed)
+            final_score = 0.7 * struct_score + 0.3 * sem_score
+            is_matched = struct_pass and sem_pass
+            # ground truth
+            gt = inst['conclusion_in_kg']
+            all_results.append(is_matched)
+            all_gt.append(gt)
+    # 评估
+    correct = sum(1 for p, g in zip(all_results, all_gt) if p and g)
+    predicted = sum(all_results)
+    actual = sum(all_gt)
+    precision = correct / predicted if predicted else 0.0
+    recall = correct / actual if actual else 0.0
+    f1 = 2 * precision * recall / (precision + recall) if (precision + recall) else 0.0
+    print(f"\n批量规则推理评估:")
+    print(f"Precision: {precision:.4f}")
+    print(f"Recall: {recall:.4f}")
+    print(f"F1: {f1:.4f}")
+    print(f"Total instances: {len(all_results)}")
+    print(f"Correct matches: {correct}")
+    print(f"Predicted matches: {predicted}")
+    print(f"Ground truth positives: {actual}")
+
 def main():
     """主函数"""
     # 创建示例数据
@@ -478,4 +537,17 @@ def main():
                 print(f"\nAnchor {i+1}: 未知anchor - 处理失败，result内容: {result}")
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--rules', type=str, default=None, help='规则文件路径')
+    parser.add_argument('--instances', type=str, default=None, help='实例ground truth文件路径')
+    args = parser.parse_args()
+    
+    if args.rules and args.instances:
+        # 批量规则推理模式
+        config = Config()
+        system = StructMatchSystem(config)
+        system.load_data("data/example_kg.txt", "data/rules.json")  # 这里KG路径可根据需要调整
+        run_batch_rule_inference(system, args.rules, args.instances)
+    else:
+        # 原有示例流程
+        main()
