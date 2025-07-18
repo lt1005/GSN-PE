@@ -6,12 +6,19 @@ from typing import List, Tuple
 
 def nx_to_pyg(G: nx.Graph) -> Data:
     """将NetworkX图转换为PyTorch Geometric数据"""
-    # 添加节点特征（如果没有的话）
-    for node in G.nodes():
-        if 'x' not in G.nodes[node]:
-            G.nodes[node]['x'] = 1.0
+    # 创建图的副本，移除字符串边属性
+    G_clean = nx.Graph()
     
-    data = from_networkx(G)
+    # 添加节点
+    for node in G.nodes():
+        G_clean.add_node(node, x=1.0)
+    
+    # 添加边（不包含字符串属性）
+    for u, v in G.edges():
+        G_clean.add_edge(u, v)
+    
+    # 转换为PyTorch Geometric数据
+    data = from_networkx(G_clean)
     if data.x is None:
         data.x = torch.ones((data.num_nodes, 1))
     return data

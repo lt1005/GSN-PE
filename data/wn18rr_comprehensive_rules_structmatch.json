@@ -1,0 +1,347 @@
+[
+  {
+    "rule_id": "rule_000",
+    "premise": [
+      {
+        "h": "X",
+        "r": "_verb_group",
+        "t": "Y"
+      },
+      {
+        "h": "Y",
+        "r": "_synset_domain_topic_of",
+        "t": "Z"
+      }
+    ],
+    "conclusion": {
+      "h": "X",
+      "r": "_synset_domain_topic_of",
+      "t": "Z"
+    },
+    "support": 110,
+    "confidence": 0.4,
+    "type": "chain"
+  },
+  {
+    "rule_id": "rule_001",
+    "premise": [
+      {
+        "h": "X",
+        "r": "_verb_group",
+        "t": "Y"
+      },
+      {
+        "h": "Y",
+        "r": "_derivationally_related_form",
+        "t": "Z"
+      }
+    ],
+    "conclusion": {
+      "h": "X",
+      "r": "_derivationally_related_form",
+      "t": "Z"
+    },
+    "support": 2243,
+    "confidence": 0.3102987070887205,
+    "type": "chain"
+  },
+  {
+    "rule_id": "rule_002",
+    "premise": [
+      {
+        "h": "X",
+        "r": "_instance_hypernym",
+        "t": "Y"
+      },
+      {
+        "h": "Y",
+        "r": "_synset_domain_topic_of",
+        "t": "Z"
+      }
+    ],
+    "conclusion": {
+      "h": "X",
+      "r": "_synset_domain_topic_of",
+      "t": "Z"
+    },
+    "support": 259,
+    "confidence": 0.38996138996138996,
+    "type": "chain"
+  },
+  {
+    "rule_id": "rule_003",
+    "premise": [
+      {
+        "h": "X",
+        "r": "_also_see",
+        "t": "Y"
+      },
+      {
+        "h": "Y",
+        "r": "_synset_domain_topic_of",
+        "t": "Z"
+      }
+    ],
+    "conclusion": {
+      "h": "X",
+      "r": "_synset_domain_topic_of",
+      "t": "Z"
+    },
+    "support": 23,
+    "confidence": 0.30434782608695654,
+    "type": "chain"
+  },
+  {
+    "rule_id": "rule_004",
+    "premise": [
+      {
+        "h": "X",
+        "r": "_member_meronym",
+        "t": "Y"
+      },
+      {
+        "h": "Y",
+        "r": "_synset_domain_topic_of",
+        "t": "Z"
+      }
+    ],
+    "conclusion": {
+      "h": "X",
+      "r": "_synset_domain_topic_of",
+      "t": "Z"
+    },
+    "support": 51,
+    "confidence": 0.49019607843137253,
+    "type": "chain"
+  },
+  {
+    "rule_id": "rule_005",
+    "premise": [
+      {
+        "h": "X",
+        "r": "_derivationally_related_form",
+        "t": "Y"
+      },
+      {
+        "h": "Y",
+        "r": "_verb_group",
+        "t": "Z"
+      }
+    ],
+    "conclusion": {
+      "h": "X",
+      "r": "_derivationally_related_form",
+      "t": "Z"
+    },
+    "support": 2265,
+    "confidence": 0.3183222958057395,
+    "type": "chain"
+  },
+  {
+    "rule_id": "rule_006",
+    "premise": [
+      {
+        "h": "X",
+        "r": "_verb_group",
+        "t": "Y"
+      },
+      {
+        "h": "X",
+        "r": "_synset_domain_topic_of",
+        "t": "Z"
+      }
+    ],
+    "conclusion": {
+      "h": "Y",
+      "r": "_synset_domain_topic_of",
+      "t": "Z"
+    },
+    "support": 107,
+    "confidence": 0.411214953271028,
+    "type": "y_type"
+  },
+  {
+    "rule_id": "rule_007",
+    "premise": [
+      {
+        "h": "X",
+        "r": "_verb_group",
+        "t": "Y"
+      },
+      {
+        "h": "X",
+        "r": "_derivationally_related_form",
+        "t": "Z"
+      }
+    ],
+    "conclusion": {
+      "h": "Y",
+      "r": "_derivationally_related_form",
+      "t": "Z"
+    },
+    "support": 2258,
+    "confidence": 0.30823737821080605,
+    "type": "y_type"
+  },
+  {
+    "rule_id": "rule_008",
+    "premise": [
+      {
+        "h": "X",
+        "r": "_instance_hypernym",
+        "t": "Y"
+      },
+      {
+        "h": "X",
+        "r": "_synset_domain_topic_of",
+        "t": "Z"
+      }
+    ],
+    "conclusion": {
+      "h": "Y",
+      "r": "_synset_domain_topic_of",
+      "t": "Z"
+    },
+    "support": 213,
+    "confidence": 0.47417840375586856,
+    "type": "y_type"
+  },
+  {
+    "rule_id": "rule_009",
+    "premise": [
+      {
+        "h": "X",
+        "r": "_also_see",
+        "t": "Y"
+      },
+      {
+        "h": "X",
+        "r": "_synset_domain_topic_of",
+        "t": "Z"
+      }
+    ],
+    "conclusion": {
+      "h": "Y",
+      "r": "_synset_domain_topic_of",
+      "t": "Z"
+    },
+    "support": 18,
+    "confidence": 0.3888888888888889,
+    "type": "y_type"
+  },
+  {
+    "rule_id": "rule_010",
+    "premise": [
+      {
+        "h": "X",
+        "r": "_derivationally_related_form",
+        "t": "Y"
+      },
+      {
+        "h": "X",
+        "r": "_verb_group",
+        "t": "Z"
+      }
+    ],
+    "conclusion": {
+      "h": "Y",
+      "r": "_derivationally_related_form",
+      "t": "Z"
+    },
+    "support": 2258,
+    "confidence": 0.31310894596988487,
+    "type": "y_type"
+  },
+  {
+    "rule_id": "rule_011",
+    "premise": [
+      {
+        "h": "X",
+        "r": "_verb_group",
+        "t": "Y"
+      },
+      {
+        "h": "Z",
+        "r": "_derivationally_related_form",
+        "t": "Y"
+      }
+    ],
+    "conclusion": {
+      "h": "X",
+      "r": "_derivationally_related_form",
+      "t": "Z"
+    },
+    "support": 2248,
+    "confidence": 0.3145017793594306,
+    "type": "v_type"
+  },
+  {
+    "rule_id": "rule_012",
+    "premise": [
+      {
+        "h": "X",
+        "r": "_has_part",
+        "t": "Y"
+      },
+      {
+        "h": "Z",
+        "r": "_instance_hypernym",
+        "t": "Y"
+      }
+    ],
+    "conclusion": {
+      "h": "X",
+      "r": "_has_part",
+      "t": "Z"
+    },
+    "support": 351,
+    "confidence": 0.41025641025641024,
+    "type": "v_type"
+  },
+  {
+    "rule_id": "rule_013",
+    "premise": [
+      {
+        "h": "X",
+        "r": "_member_of_domain_region",
+        "t": "Y"
+      },
+      {
+        "h": "Z",
+        "r": "_instance_hypernym",
+        "t": "Y"
+      }
+    ],
+    "conclusion": {
+      "h": "X",
+      "r": "_member_of_domain_region",
+      "t": "Z"
+    },
+    "support": 8,
+    "confidence": 0.5,
+    "type": "v_type"
+  },
+  {
+    "rule_id": "rule_014",
+    "premise": [
+      {
+        "h": "X",
+        "r": "_derivationally_related_form",
+        "t": "Y"
+      },
+      {
+        "h": "Z",
+        "r": "_verb_group",
+        "t": "Y"
+      }
+    ],
+    "conclusion": {
+      "h": "X",
+      "r": "_derivationally_related_form",
+      "t": "Z"
+    },
+    "support": 2248,
+    "confidence": 0.320729537366548,
+    "type": "v_type"
+  }
+]

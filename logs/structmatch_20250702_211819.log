@@ -1,0 +1,201 @@
+2025-07-02 21:18:20,065 - INFO - 成功加载预训练embedding
+2025-07-02 21:18:20,195 - INFO - StructMatch系统初始化完成（集成语义增强）
+2025-07-02 21:18:20,198 - INFO - 成功加载7条规则
+2025-07-02 21:18:21,691 - INFO - 成功加载知识图谱: 40559个实体, 11种关系, 86835个三元组
+2025-07-02 21:18:22,169 - WARNING - 未提供target_motif，motif剪枝将被跳过
+2025-07-02 21:18:22,171 - INFO - 规则前提大小: None, 最大扩展步数: 2
+2025-07-02 21:18:22,601 - INFO - 步骤 1: 添加边 ('01768969', '08103777', '_hypernym'), 相似度提升: 0.8246 (当前: 0.9526)
+2025-07-02 21:18:23,160 - INFO - 步骤 2: 添加边 ('01625747', '08103777', '_hypernym'), 相似度提升: 0.0580 (当前: 0.9647)
+2025-07-02 21:18:23,200 - ERROR - 子图匹配失败: QuickFixer.apply_fixes.<locals>.<lambda>() got an unexpected keyword argument 'structure_weight'
+2025-07-02 21:18:23,247 - WARNING - 未提供target_motif，motif剪枝将被跳过
+2025-07-02 21:18:23,248 - INFO - 规则前提大小: None, 最大扩展步数: 2
+2025-07-02 21:18:23,496 - INFO - 步骤 1: 添加边 ('08501565', '09439433', '_has_part'), 相似度提升: 0.7736 (当前: 0.9191)
+2025-07-02 21:18:23,815 - INFO - 步骤 2: 添加边 ('08501565', '08630039', '_hypernym'), 相似度提升: 0.0490 (当前: 0.9375)
+2025-07-02 21:18:23,865 - WARNING - 未提供target_motif，motif剪枝将被跳过
+2025-07-02 21:18:23,866 - INFO - 规则前提大小: None, 最大扩展步数: 2
+2025-07-02 21:18:24,023 - INFO - 步骤 1: 添加边 ('08356903', '08441203', '_synset_domain_topic_of'), 相似度提升: 0.7501 (当前: 0.9261)
+2025-07-02 21:18:24,940 - INFO - 步骤 2: 相似度提升不足 (0.0051), 停止扩展
+2025-07-02 21:18:25,523 - ERROR - 子图匹配失败: QuickFixer.apply_fixes.<locals>.<lambda>() got an unexpected keyword argument 'structure_weight'
+2025-07-02 21:18:25,558 - WARNING - 未提供target_motif，motif剪枝将被跳过
+2025-07-02 21:18:25,561 - INFO - 规则前提大小: None, 最大扩展步数: 2
+2025-07-02 21:18:25,961 - INFO - 步骤 1: 添加边 ('08191701', '08198137', '_hypernym'), 相似度提升: 0.7541 (当前: 0.9650)
+2025-07-02 21:18:26,294 - INFO - 步骤 2: 添加边 ('08345613', '08198398', '_hypernym'), 相似度提升: 0.0170 (当前: 0.9636)
+2025-07-02 21:18:26,338 - ERROR - 子图匹配失败: QuickFixer.apply_fixes.<locals>.<lambda>() got an unexpected keyword argument 'structure_weight'
+2025-07-02 21:18:26,353 - WARNING - 未提供target_motif，motif剪枝将被跳过
+2025-07-02 21:18:26,354 - INFO - 规则前提大小: None, 最大扩展步数: 2
+2025-07-02 21:18:26,471 - INFO - 步骤 1: 添加边 ('09894143', '00589948', '_derivationally_related_form'), 相似度提升: 0.8199 (当前: 0.9448)
+2025-07-02 21:18:26,580 - INFO - 步骤 2: 添加边 ('00589948', '09894143', '_derivationally_related_form'), 相似度提升: 0.0139 (当前: 0.9372)
+2025-07-02 21:18:26,611 - ERROR - 子图匹配失败: QuickFixer.apply_fixes.<locals>.<lambda>() got an unexpected keyword argument 'structure_weight'
+2025-07-02 21:18:26,650 - WARNING - 未提供target_motif，motif剪枝将被跳过
+2025-07-02 21:18:26,652 - INFO - 规则前提大小: None, 最大扩展步数: 2
+2025-07-02 21:18:26,743 - INFO - 步骤 1: 添加边 ('08215801', '08215248', '_hypernym'), 相似度提升: 0.8231 (当前: 0.9865)
+2025-07-02 21:18:26,871 - INFO - 步骤 2: 相似度提升不足 (0.0091), 停止扩展
+2025-07-02 21:18:26,896 - ERROR - 子图匹配失败: QuickFixer.apply_fixes.<locals>.<lambda>() got an unexpected keyword argument 'structure_weight'
+2025-07-02 21:18:26,912 - WARNING - 未提供target_motif，motif剪枝将被跳过
+2025-07-02 21:18:26,912 - INFO - 规则前提大小: None, 最大扩展步数: 2
+2025-07-02 21:18:27,113 - INFO - 步骤 1: 添加边 ('08183802', '08191230', '_hypernym'), 相似度提升: 0.7167 (当前: 0.9498)
+2025-07-02 21:18:27,311 - INFO - 步骤 2: 添加边 ('08214272', '08190754', '_hypernym'), 相似度提升: 0.0344 (当前: 0.9560)
+2025-07-02 21:18:27,347 - ERROR - 子图匹配失败: QuickFixer.apply_fixes.<locals>.<lambda>() got an unexpected keyword argument 'structure_weight'
+2025-07-02 21:18:27,365 - WARNING - 未提供target_motif，motif剪枝将被跳过
+2025-07-02 21:18:27,365 - INFO - 规则前提大小: None, 最大扩展步数: 2
+2025-07-02 21:18:27,616 - INFO - 步骤 1: 添加边 ('01471070', '01626134', '_member_meronym'), 相似度提升: 0.7700 (当前: 0.9660)
+2025-07-02 21:18:27,841 - INFO - 步骤 2: 添加边 ('01471070', '02511824', '_member_meronym'), 相似度提升: 0.0325 (当前: 0.9484)
+2025-07-02 21:18:27,875 - ERROR - 子图匹配失败: QuickFixer.apply_fixes.<locals>.<lambda>() got an unexpected keyword argument 'structure_weight'
+2025-07-02 21:18:27,920 - WARNING - 未提供target_motif，motif剪枝将被跳过
+2025-07-02 21:18:27,924 - INFO - 规则前提大小: None, 最大扩展步数: 2
+2025-07-02 21:18:28,016 - INFO - 步骤 1: 添加边 ('08029421', '10141811', '_member_meronym'), 相似度提升: 0.7868 (当前: 0.9707)
+2025-07-02 21:18:28,110 - INFO - 步骤 2: 相似度提升不足 (0.0039), 停止扩展
+2025-07-02 21:18:28,129 - ERROR - 子图匹配失败: QuickFixer.apply_fixes.<locals>.<lambda>() got an unexpected keyword argument 'structure_weight'
+2025-07-02 21:18:28,145 - WARNING - 未提供target_motif，motif剪枝将被跳过
+2025-07-02 21:18:28,145 - INFO - 规则前提大小: None, 最大扩展步数: 2
+2025-07-02 21:18:28,238 - INFO - 步骤 1: 添加边 ('08396990', '08391387', '_hypernym'), 相似度提升: 0.8327 (当前: 0.9325)
+2025-07-02 21:18:28,332 - INFO - 步骤 2: 添加边 ('08394922', '08396990', '_has_part'), 相似度提升: 0.0278 (当前: 0.9312)
+2025-07-02 21:18:28,365 - ERROR - 子图匹配失败: QuickFixer.apply_fixes.<locals>.<lambda>() got an unexpected keyword argument 'structure_weight'
+2025-07-02 21:18:28,380 - WARNING - 未提供target_motif，motif剪枝将被跳过
+2025-07-02 21:18:28,380 - INFO - 规则前提大小: None, 最大扩展步数: 2
+2025-07-02 21:18:28,513 - INFO - 步骤 1: 添加边 ('09439433', '09381480', '_member_meronym'), 相似度提升: 0.8008 (当前: 0.9532)
+2025-07-02 21:18:28,677 - INFO - 步骤 2: 添加边 ('09439433', '09394007', '_member_meronym'), 相似度提升: 0.0378 (当前: 0.9754)
+2025-07-02 21:18:28,703 - ERROR - 子图匹配失败: QuickFixer.apply_fixes.<locals>.<lambda>() got an unexpected keyword argument 'structure_weight'
+2025-07-02 21:18:28,715 - WARNING - 未提供target_motif，motif剪枝将被跳过
+2025-07-02 21:18:28,716 - INFO - 规则前提大小: None, 最大扩展步数: 2
+2025-07-02 21:18:28,811 - INFO - 步骤 1: 添加边 ('09533048', '15253139', '_synset_domain_topic_of'), 相似度提升: 0.7257 (当前: 0.8492)
+2025-07-02 21:18:29,174 - INFO - 步骤 2: 添加边 ('09531630', '15253139', '_synset_domain_topic_of'), 相似度提升: 0.1020 (当前: 0.9132)
+2025-07-02 21:18:29,203 - ERROR - 子图匹配失败: QuickFixer.apply_fixes.<locals>.<lambda>() got an unexpected keyword argument 'structure_weight'
+2025-07-02 21:18:29,215 - WARNING - 未提供target_motif，motif剪枝将被跳过
+2025-07-02 21:18:29,215 - INFO - 规则前提大小: None, 最大扩展步数: 2
+2025-07-02 21:18:29,273 - INFO - 步骤 1: 添加边 ('10086821', '08199025', '_synset_domain_topic_of'), 相似度提升: 0.7276 (当前: 0.9302)
+2025-07-02 21:18:29,815 - INFO - 步骤 2: 添加边 ('11051070', '10650162', '_instance_hypernym'), 相似度提升: 0.0634 (当前: 0.9791)
+2025-07-02 21:18:29,873 - ERROR - 子图匹配失败: QuickFixer.apply_fixes.<locals>.<lambda>() got an unexpected keyword argument 'structure_weight'
+2025-07-02 21:18:29,916 - WARNING - 未提供target_motif，motif剪枝将被跳过
+2025-07-02 21:18:29,922 - INFO - 规则前提大小: None, 最大扩展步数: 2
+2025-07-02 21:18:30,111 - INFO - 步骤 1: 添加边 ('08085824', '09894143', '_member_meronym'), 相似度提升: 0.8110 (当前: 0.9607)
+2025-07-02 21:18:30,298 - INFO - 步骤 2: 添加边 ('10842730', '10705615', '_instance_hypernym'), 相似度提升: 0.0217 (当前: 0.9547)
+2025-07-02 21:18:30,330 - ERROR - 子图匹配失败: QuickFixer.apply_fixes.<locals>.<lambda>() got an unexpected keyword argument 'structure_weight'
+2025-07-02 21:18:30,344 - WARNING - 未提供target_motif，motif剪枝将被跳过
+2025-07-02 21:18:30,345 - INFO - 规则前提大小: None, 最大扩展步数: 2
+2025-07-02 21:18:30,583 - INFO - 步骤 1: 添加边 ('00588881', '09798811', '_derivationally_related_form'), 相似度提升: 0.7956 (当前: 0.9676)
+2025-07-02 21:18:30,776 - INFO - 步骤 2: 相似度提升不足 (0.0096), 停止扩展
+2025-07-02 21:18:30,800 - ERROR - 子图匹配失败: QuickFixer.apply_fixes.<locals>.<lambda>() got an unexpected keyword argument 'structure_weight'
+2025-07-02 21:18:30,814 - WARNING - 未提供target_motif，motif剪枝将被跳过
+2025-07-02 21:18:30,814 - INFO - 规则前提大小: None, 最大扩展步数: 2
+2025-07-02 21:18:30,898 - INFO - 步骤 1: 添加边 ('08268085', '08267640', '_hypernym'), 相似度提升: 0.7875 (当前: 0.9568)
+2025-07-02 21:18:30,966 - INFO - 步骤 2: 添加边 ('08267640', '06000644', '_synset_domain_topic_of'), 相似度提升: 0.0179 (当前: 0.9373)
+2025-07-02 21:18:30,999 - ERROR - 子图匹配失败: QuickFixer.apply_fixes.<locals>.<lambda>() got an unexpected keyword argument 'structure_weight'
+2025-07-02 21:18:31,013 - WARNING - 未提供target_motif，motif剪枝将被跳过
+2025-07-02 21:18:31,014 - INFO - 规则前提大小: None, 最大扩展步数: 2
+2025-07-02 21:18:31,092 - INFO - 步骤 1: 添加边 ('04567222', '06118563', '_synset_domain_topic_of'), 相似度提升: 0.6979 (当前: 0.8791)
+2025-07-02 21:18:31,253 - INFO - 步骤 2: 相似度提升不足 (-0.0233), 停止扩展
+2025-07-02 21:18:31,281 - ERROR - 子图匹配失败: QuickFixer.apply_fixes.<locals>.<lambda>() got an unexpected keyword argument 'structure_weight'
+2025-07-02 21:18:31,295 - WARNING - 未提供target_motif，motif剪枝将被跳过
+2025-07-02 21:18:31,296 - INFO - 规则前提大小: None, 最大扩展步数: 2
+2025-07-02 21:18:31,496 - INFO - 步骤 1: 添加边 ('05586446', '05269901', '_has_part'), 相似度提升: 0.7679 (当前: 0.9689)
+2025-07-02 21:18:31,760 - INFO - 步骤 2: 添加边 ('05269901', '05472032', '_has_part'), 相似度提升: 0.0585 (当前: 0.9678)
+2025-07-02 21:18:31,795 - ERROR - 子图匹配失败: QuickFixer.apply_fixes.<locals>.<lambda>() got an unexpected keyword argument 'structure_weight'
+2025-07-02 21:18:31,808 - WARNING - 未提供target_motif，motif剪枝将被跳过
+2025-07-02 21:18:31,810 - INFO - 规则前提大小: None, 最大扩展步数: 2
+2025-07-02 21:18:31,927 - INFO - 步骤 1: 添加边 ('05216365', '05296639', '_has_part'), 相似度提升: 0.7503 (当前: 0.9576)
+2025-07-02 21:18:32,148 - INFO - 步骤 2: 添加边 ('05216365', '05563770', '_has_part'), 相似度提升: 0.0865 (当前: 0.9718)
+2025-07-02 21:18:32,198 - ERROR - 子图匹配失败: QuickFixer.apply_fixes.<locals>.<lambda>() got an unexpected keyword argument 'structure_weight'
+2025-07-02 21:18:32,211 - WARNING - 未提供target_motif，motif剪枝将被跳过
+2025-07-02 21:18:32,213 - INFO - 规则前提大小: None, 最大扩展步数: 2
+2025-07-02 21:18:32,446 - INFO - 步骤 1: 添加边 ('05216365', '05549830', '_has_part'), 相似度提升: 0.6655 (当前: 0.8699)
+2025-07-02 21:18:32,727 - INFO - 步骤 2: 添加边 ('05216365', '05303402', '_has_part'), 相似度提升: 0.0856 (当前: 0.9012)
+2025-07-02 21:18:32,971 - WARNING - 未提供target_motif，motif剪枝将被跳过
+2025-07-02 21:18:32,972 - INFO - 规则前提大小: None, 最大扩展步数: 2
+2025-07-02 21:18:33,048 - INFO - 步骤 1: 添加边 ('09381480', '06095022', '_synset_domain_topic_of'), 相似度提升: 0.8315 (当前: 0.9529)
+2025-07-02 21:18:33,246 - INFO - 步骤 2: 相似度提升不足 (0.0061), 停止扩展
+2025-07-02 21:18:33,269 - ERROR - 子图匹配失败: QuickFixer.apply_fixes.<locals>.<lambda>() got an unexpected keyword argument 'structure_weight'
+2025-07-02 21:18:33,287 - WARNING - 未提供target_motif，motif剪枝将被跳过
+2025-07-02 21:18:33,288 - INFO - 规则前提大小: None, 最大扩展步数: 2
+2025-07-02 21:18:33,316 - INFO - 步骤 1: 添加边 ('09533048', '15253139', '_synset_domain_topic_of'), 相似度提升: 0.7603 (当前: 0.9171)
+2025-07-02 21:18:33,543 - INFO - 步骤 2: 添加边 ('10452892', '15253139', '_synset_domain_topic_of'), 相似度提升: 0.1360 (当前: 0.9485)
+2025-07-02 21:18:33,797 - ERROR - 子图匹配失败: QuickFixer.apply_fixes.<locals>.<lambda>() got an unexpected keyword argument 'structure_weight'
+2025-07-02 21:18:33,816 - WARNING - 未提供target_motif，motif剪枝将被跳过
+2025-07-02 21:18:33,817 - INFO - 规则前提大小: None, 最大扩展步数: 2
+2025-07-02 21:18:33,942 - INFO - 步骤 1: 添加边 ('11051070', '10123844', '_instance_hypernym'), 相似度提升: 0.7870 (当前: 0.9361)
+2025-07-02 21:18:34,215 - INFO - 步骤 2: 添加边 ('10954966', '10123844', '_instance_hypernym'), 相似度提升: 0.0413 (当前: 0.9690)
+2025-07-02 21:18:34,248 - ERROR - 子图匹配失败: QuickFixer.apply_fixes.<locals>.<lambda>() got an unexpected keyword argument 'structure_weight'
+2025-07-02 21:18:34,276 - WARNING - 未提供target_motif，motif剪枝将被跳过
+2025-07-02 21:18:34,277 - INFO - 规则前提大小: None, 最大扩展步数: 2
+2025-07-02 21:18:34,463 - INFO - 步骤 1: 添加边 ('10842730', '10705615', '_instance_hypernym'), 相似度提升: 0.8547 (当前: 0.9766)
+2025-07-02 21:18:34,840 - INFO - 步骤 2: 相似度提升不足 (0.0039), 停止扩展
+2025-07-02 21:18:34,862 - ERROR - 子图匹配失败: QuickFixer.apply_fixes.<locals>.<lambda>() got an unexpected keyword argument 'structure_weight'
+2025-07-02 21:18:34,881 - WARNING - 未提供target_motif，motif剪枝将被跳过
+2025-07-02 21:18:34,882 - INFO - 规则前提大小: None, 最大扩展步数: 2
+2025-07-02 21:18:35,047 - INFO - 步骤 1: 添加边 ('11164671', '10067305', '_instance_hypernym'), 相似度提升: 0.7288 (当前: 0.9136)
+2025-07-02 21:18:35,242 - INFO - 步骤 2: 添加边 ('07244613', '10067305', '_derivationally_related_form'), 相似度提升: 0.0688 (当前: 0.9311)
+2025-07-02 21:18:35,264 - ERROR - 子图匹配失败: QuickFixer.apply_fixes.<locals>.<lambda>() got an unexpected keyword argument 'structure_weight'
+2025-07-02 21:18:35,282 - WARNING - 未提供target_motif，motif剪枝将被跳过
+2025-07-02 21:18:35,283 - INFO - 规则前提大小: None, 最大扩展步数: 2
+2025-07-02 21:18:35,416 - INFO - 步骤 1: 添加边 ('09798811', '10016103', '_hypernym'), 相似度提升: 0.7487 (当前: 0.9536)
+2025-07-02 21:18:35,646 - INFO - 步骤 2: 相似度提升不足 (-0.0101), 停止扩展
+2025-07-02 21:18:35,670 - ERROR - 子图匹配失败: QuickFixer.apply_fixes.<locals>.<lambda>() got an unexpected keyword argument 'structure_weight'
+2025-07-02 21:18:35,684 - WARNING - 未提供target_motif，motif剪枝将被跳过
+2025-07-02 21:18:35,685 - INFO - 规则前提大小: None, 最大扩展步数: 2
+2025-07-02 21:18:35,853 - INFO - 步骤 1: 添加边 ('11078982', '09798811', '_instance_hypernym'), 相似度提升: 0.7053 (当前: 0.9360)
+2025-07-02 21:18:36,041 - INFO - 步骤 2: 添加边 ('00588881', '09798811', '_derivationally_related_form'), 相似度提升: 0.1198 (当前: 0.9220)
+2025-07-02 21:18:36,065 - WARNING - 未提供target_motif，motif剪枝将被跳过
+2025-07-02 21:18:36,066 - INFO - 规则前提大小: None, 最大扩展步数: 2
+2025-07-02 21:18:36,215 - INFO - 步骤 1: 添加边 ('11301414', '09798811', '_instance_hypernym'), 相似度提升: 0.7121 (当前: 0.8766)
+2025-07-02 21:18:36,378 - INFO - 步骤 2: 添加边 ('11094055', '06453849', '_synset_domain_topic_of'), 相似度提升: 0.0571 (当前: 0.9000)
+2025-07-02 21:18:36,409 - ERROR - 子图匹配失败: QuickFixer.apply_fixes.<locals>.<lambda>() got an unexpected keyword argument 'structure_weight'
+2025-07-02 21:18:36,422 - WARNING - 未提供target_motif，motif剪枝将被跳过
+2025-07-02 21:18:36,423 - INFO - 规则前提大小: None, 最大扩展步数: 2
+2025-07-02 21:18:36,573 - INFO - 步骤 1: 添加边 ('11338796', '10547145', '_instance_hypernym'), 相似度提升: 0.6762 (当前: 0.9228)
+2025-07-02 21:18:36,864 - INFO - 步骤 2: 添加边 ('11301414', '10547145', '_instance_hypernym'), 相似度提升: 0.1290 (当前: 0.9370)
+2025-07-02 21:18:36,902 - ERROR - 子图匹配失败: QuickFixer.apply_fixes.<locals>.<lambda>() got an unexpected keyword argument 'structure_weight'
+2025-07-02 21:18:36,920 - WARNING - 未提供target_motif，motif剪枝将被跳过
+2025-07-02 21:18:36,921 - INFO - 规则前提大小: None, 最大扩展步数: 2
+2025-07-02 21:18:37,082 - INFO - 步骤 1: 添加边 ('09798811', '00588881', '_derivationally_related_form'), 相似度提升: 0.8235 (当前: 0.9556)
+2025-07-02 21:18:37,238 - INFO - 步骤 2: 添加边 ('11301414', '09798811', '_instance_hypernym'), 相似度提升: 0.0274 (当前: 0.9595)
+2025-07-02 21:18:37,262 - ERROR - 子图匹配失败: QuickFixer.apply_fixes.<locals>.<lambda>() got an unexpected keyword argument 'structure_weight'
+2025-07-02 21:18:37,280 - WARNING - 未提供target_motif，motif剪枝将被跳过
+2025-07-02 21:18:37,281 - INFO - 规则前提大小: None, 最大扩展步数: 2
+2025-07-02 21:18:37,524 - INFO - 步骤 1: 添加边 ('13038944', '08103777', '_hypernym'), 相似度提升: 0.7988 (当前: 0.9594)
+2025-07-02 21:18:38,054 - INFO - 步骤 2: 相似度提升不足 (-0.0103), 停止扩展
+2025-07-02 21:18:38,082 - ERROR - 子图匹配失败: QuickFixer.apply_fixes.<locals>.<lambda>() got an unexpected keyword argument 'structure_weight'
+2025-07-02 21:18:38,100 - WARNING - 未提供target_motif，motif剪枝将被跳过
+2025-07-02 21:18:38,101 - INFO - 规则前提大小: None, 最大扩展步数: 2
+2025-07-02 21:18:38,239 - INFO - 步骤 1: 添加边 ('09439433', '08435388', '_hypernym'), 相似度提升: 0.7844 (当前: 0.9543)
+2025-07-02 21:18:38,466 - INFO - 步骤 2: 添加边 ('08378819', '08435388', '_hypernym'), 相似度提升: 0.0187 (当前: 0.9523)
+2025-07-02 21:18:38,502 - ERROR - 子图匹配失败: QuickFixer.apply_fixes.<locals>.<lambda>() got an unexpected keyword argument 'structure_weight'
+2025-07-02 21:18:38,518 - WARNING - 未提供target_motif，motif剪枝将被跳过
+2025-07-02 21:18:38,519 - INFO - 规则前提大小: None, 最大扩展步数: 2
+2025-07-02 21:18:38,594 - INFO - 步骤 1: 添加边 ('08356903', '08401248', '_hypernym'), 相似度提升: 0.7915 (当前: 0.9576)
+2025-07-02 21:18:38,729 - INFO - 步骤 2: 添加边 ('08356074', '08401248', '_hypernym'), 相似度提升: 0.0244 (当前: 0.9663)
+2025-07-02 21:18:38,764 - ERROR - 子图匹配失败: QuickFixer.apply_fixes.<locals>.<lambda>() got an unexpected keyword argument 'structure_weight'
+2025-07-02 21:18:38,795 - WARNING - 未提供target_motif，motif剪枝将被跳过
+2025-07-02 21:18:38,796 - INFO - 规则前提大小: None, 最大扩展步数: 2
+2025-07-02 21:18:39,198 - INFO - 步骤 1: 添加边 ('08195797', '08198398', '_hypernym'), 相似度提升: 0.8002 (当前: 0.9682)
+2025-07-02 21:18:39,497 - INFO - 步骤 2: 相似度提升不足 (-0.0009), 停止扩展
+2025-07-02 21:18:39,524 - ERROR - 子图匹配失败: QuickFixer.apply_fixes.<locals>.<lambda>() got an unexpected keyword argument 'structure_weight'
+2025-07-02 21:18:39,538 - WARNING - 未提供target_motif，motif剪枝将被跳过
+2025-07-02 21:18:39,539 - INFO - 规则前提大小: None, 最大扩展步数: 2
+2025-07-02 21:18:39,646 - INFO - 步骤 1: 添加边 ('08085824', '07965085', '_hypernym'), 相似度提升: 0.7888 (当前: 0.9750)
+2025-07-02 21:18:39,865 - INFO - 步骤 2: 添加边 ('07965085', '07950920', '_hypernym'), 相似度提升: 0.0294 (当前: 0.9763)
+2025-07-02 21:18:39,910 - ERROR - 子图匹配失败: QuickFixer.apply_fixes.<locals>.<lambda>() got an unexpected keyword argument 'structure_weight'
+2025-07-02 21:18:39,925 - WARNING - 未提供target_motif，motif剪枝将被跳过
+2025-07-02 21:18:39,925 - INFO - 规则前提大小: None, 最大扩展步数: 2
+2025-07-02 21:18:39,988 - INFO - 步骤 1: 添加边 ('08268321', '06000644', '_synset_domain_topic_of'), 相似度提升: 0.7540 (当前: 0.9110)
+2025-07-02 21:18:40,258 - INFO - 步骤 2: 添加边 ('00642803', '06000644', '_synset_domain_topic_of'), 相似度提升: 0.0152 (当前: 0.9303)
+2025-07-02 21:18:40,283 - ERROR - 子图匹配失败: QuickFixer.apply_fixes.<locals>.<lambda>() got an unexpected keyword argument 'structure_weight'
+2025-07-02 21:18:40,296 - WARNING - 未提供target_motif，motif剪枝将被跳过
+2025-07-02 21:18:40,297 - INFO - 规则前提大小: None, 最大扩展步数: 2
+2025-07-02 21:18:40,363 - INFO - 步骤 1: 添加边 ('08589351', '06118563', '_synset_domain_topic_of'), 相似度提升: 0.6863 (当前: 0.9472)
+2025-07-02 21:18:40,559 - INFO - 步骤 2: 添加边 ('08590172', '06118563', '_synset_domain_topic_of'), 相似度提升: 0.0657 (当前: 0.9338)
+2025-07-02 21:18:40,583 - ERROR - 子图匹配失败: QuickFixer.apply_fixes.<locals>.<lambda>() got an unexpected keyword argument 'structure_weight'
+2025-07-02 21:18:40,606 - WARNING - 未提供target_motif，motif剪枝将被跳过
+2025-07-02 21:18:40,607 - INFO - 规则前提大小: None, 最大扩展步数: 2
+2025-07-02 21:18:40,813 - INFO - 步骤 1: 添加边 ('02463205', '05595083', '_hypernym'), 相似度提升: 0.7559 (当前: 0.9345)
+2025-07-02 21:18:41,045 - INFO - 步骤 2: 添加边 ('05586446', '05587034', '_has_part'), 相似度提升: 0.0646 (当前: 0.9338)
+2025-07-02 21:18:41,076 - ERROR - 子图匹配失败: QuickFixer.apply_fixes.<locals>.<lambda>() got an unexpected keyword argument 'structure_weight'
+2025-07-02 21:18:41,095 - WARNING - 未提供target_motif，motif剪枝将被跳过
+2025-07-02 21:18:41,095 - INFO - 规则前提大小: None, 最大扩展步数: 2
+2025-07-02 21:18:41,208 - INFO - 步骤 1: 添加边 ('05542893', '05595083', '_hypernym'), 相似度提升: 0.7632 (当前: 0.9546)
+2025-07-02 21:18:41,409 - INFO - 步骤 2: 添加边 ('05216365', '05296639', '_has_part'), 相似度提升: 0.1209 (当前: 0.9614)
+2025-07-02 21:18:41,453 - ERROR - 子图匹配失败: QuickFixer.apply_fixes.<locals>.<lambda>() got an unexpected keyword argument 'structure_weight'
+2025-07-02 21:18:41,466 - WARNING - 未提供target_motif，motif剪枝将被跳过
+2025-07-02 21:18:41,467 - INFO - 规则前提大小: None, 最大扩展步数: 2
+2025-07-02 21:18:41,687 - INFO - 步骤 1: 添加边 ('05549830', '05220461', '_hypernym'), 相似度提升: 0.7777 (当前: 0.9590)
+2025-07-02 21:18:42,216 - INFO - 步骤 2: 添加边 ('01895219', '05220461', '_hypernym'), 相似度提升: 0.0513 (当前: 0.9711)
+2025-07-02 21:18:42,246 - ERROR - 子图匹配失败: QuickFixer.apply_fixes.<locals>.<lambda>() got an unexpected keyword argument 'structure_weight'

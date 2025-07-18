@@ -1,56 +1,51 @@
 import networkx as nx
 import torch
 import numpy as np
-from typing import Tuple
+from typing import Tuple, List, Optional
 from collections import defaultdict
 
 class MotifExtractor:
-    """motif-count向量提取器"""
+    """motif-count向量提取器，支持motif类型可配置"""
     
-    def __init__(self, motif_dim: int = 8):
-        self.motif_dim = motif_dim
-        self.motif_types = [
-            'path_2', 'fork', 'triangle', 'star_in', 
-            'star_out', 'cycle_3', 'cycle_4', 'complete_3'
-        ]
+    DEFAULT_MOTIF_TYPES = [
+        'path_2', 'fork', 'triangle', 'star_in', 
+        'star_out', 'cycle_3', 'cycle_4', 'complete_3'
+    ]
+    
+    def __init__(self, motif_types: Optional[List[str]] = None):
+        self.motif_types = motif_types if motif_types is not None else self.DEFAULT_MOTIF_TYPES
+        self.motif_dim = len(self.motif_types)
     
     def extract_motifs(self, G: nx.Graph) -> torch.Tensor:
-        """提取图的motif特征向量"""
+        """提取图的motif特征向量，自动适配motif类型"""
         if G.number_of_nodes() == 0:
             return torch.zeros(self.motif_dim)
-        
         motif_counts = []
-        
-        # Path-2 motif
-        path_2_count = self._count_path_2(G)
-        motif_counts.append(path_2_count)
-        
-        # Fork motif
-        fork_count = self._count_fork(G)
-        motif_counts.append(fork_count)
-        
-        # Triangle motif
-        triangle_count = self._count_triangles(G)
-        motif_counts.append(triangle_count)
-        
-        # Star motifs
-        star_in_count, star_out_count = self._count_stars(G)
-        motif_counts.extend([star_in_count, star_out_count])
-        
-        # Cycle motifs
-        cycle_3_count = self._count_cycles(G, 3)
-        cycle_4_count = self._count_cycles(G, 4)
-        motif_counts.extend([cycle_3_count, cycle_4_count])
-        
-        # Complete-3 motif
-        complete_3_count = self._count_complete_subgraphs(G, 3)
-        motif_counts.append(complete_3_count)
-        
-        # 归一化
+        for motif in self.motif_types:
+            if motif == 'path_2':
+                motif_counts.append(self._count_path_2(G))
+            elif motif == 'fork':
+                motif_counts.append(self._count_fork(G))
+            elif motif == 'triangle':
+                motif_counts.append(self._count_triangles(G))
+            elif motif == 'star_in':
+                star_in, _ = self._count_stars(G)
+                motif_counts.append(star_in)
+            elif motif == 'star_out':
+                _, star_out = self._count_stars(G)
+                motif_counts.append(star_out)
+            elif motif == 'cycle_3':
+                motif_counts.append(self._count_cycles(G, 3))
+            elif motif == 'cycle_4':
+                motif_counts.append(self._count_cycles(G, 4))
+            elif motif == 'complete_3':
+                motif_counts.append(self._count_complete_subgraphs(G, 3))
+            # 可扩展更多motif类型
+            else:
+                motif_counts.append(0)
         motif_vector = torch.tensor(motif_counts, dtype=torch.float32)
         if motif_vector.sum() > 0:
             motif_vector = motif_vector / (motif_vector.sum() + 1e-8)
-        
         return motif_vector
     
     def _count_path_2(self, G: nx.Graph) -> int:
@@ -78,9 +73,10 @@ class MotifExtractor:
     
     def _count_stars(self, G: nx.Graph) -> Tuple[int, int]:
         """计算星形结构数量"""
-        if G.is_directed():
-            star_in = sum(1 for node in G.nodes() if G.in_degree(node) >= 3)
-            star_out = sum(1 for node in G.nodes() if G.out_degree(node) >= 3)
+        # 只在DiGraph/DiGraphView类型下调用in_degree/out_degree
+        if isinstance(G, (nx.DiGraph, nx.MultiDiGraph)):
+            star_in = sum(1 for node in G.nodes() if G.in_degree[node] >= 3)
+            star_out = sum(1 for node in G.nodes() if G.out_degree[node] >= 3)
         else:
             star_in = star_out = self._count_fork(G)
         return star_in, star_out
@@ -88,7 +84,7 @@ class MotifExtractor:
     def _count_cycles(self, G: nx.Graph, length: int) -> int:
         """计算指定长度的环数量"""
         try:
-            if G.is_directed():
+            if isinstance(G, (nx.DiGraph, nx.MultiDiGraph)):
                 cycles = list(nx.simple_cycles(G))
                 return sum(1 for cycle in cycles if len(cycle) == length)
             else:

@@ -15,55 +15,60 @@ class GraphExpander:
     def expand_from_anchor(self, anchor: Tuple[str, str, str], 
                           kg: nx.MultiDiGraph, 
                           target_embed: torch.Tensor,
-                          embed_model) -> List[nx.Graph]:
-        """从anchor三元组开始扩展子图"""
+                          embed_model,
+                          rule_node_count: int = None,
+                          rule_edge_count: int = None) -> List[nx.Graph]:
+        """beam search结构分驱动扩展，每步保留top-k路径，节点/边数≤规则结构，最终只保留节点/边数=规则结构的子图"""
+        import copy
         h, r, t = anchor
-        
-        # 初始化子图
-        current_subgraph = nx.Graph()
-        current_subgraph.add_edge(h, t, relation=r)
-        
-        # 候选扩展列表 (priority_queue)
-        candidates = []
+        initial_subgraph = nx.Graph()
+        initial_subgraph.add_edge(h, t, relation=r)
         visited_edges = {(h, t, r)}
-        
+        # beam: (负结构分, 子图, 已访问边)
+        beam = [(0, id(initial_subgraph), initial_subgraph, visited_edges)]
+        results = []
         for step in range(self.max_steps):
-            # 获取当前子图的嵌入
-            current_embed = self._get_graph_embedding(current_subgraph, embed_model)
-            current_score = self._similarity_score(current_embed, target_embed)
-            
-            # 找到所有可能的扩展边
-            expansion_edges = self._find_expansion_edges(
-                current_subgraph, kg, visited_edges
-            )
-            
-            if not expansion_edges:
+            print(f"[DEBUG] Step {step+1} - beam size: {len(beam)}")
+            new_beam = []
+            for neg_score, _, subgraph, visited in beam:
+                print(f"[DEBUG]  Current subgraph nodes: {list(subgraph.nodes())}, edges: {list(subgraph.edges(data=True))}")
+                # 节点/边数超过规则结构则剪枝
+                if (rule_node_count and subgraph.number_of_nodes() > rule_node_count) or \
+                   (rule_edge_count and subgraph.number_of_edges() > rule_edge_count):
+                    print(f"[DEBUG]   Pruned: nodes={subgraph.number_of_nodes()}, edges={subgraph.number_of_edges()}")
+                    continue
+                # 如果节点/边数正好等于规则结构，加入结果
+                if (rule_node_count and subgraph.number_of_nodes() == rule_node_count) and \
+                   (rule_edge_count and subgraph.number_of_edges() == rule_edge_count):
+                    print(f"[DEBUG]   Candidate result: nodes={subgraph.number_of_nodes()}, edges={subgraph.number_of_edges()}")
+                    results.append(subgraph)
+                    continue
+                expansion_edges = self._find_expansion_edges(subgraph, kg, visited)
+                print(f"[DEBUG]   Expansion edges: {expansion_edges}")
+                for edge in expansion_edges[:self.beam_size * 3]:
+                    eh, et, er = edge
+                    if edge in visited:
+                        continue
+                    temp_subgraph = copy.deepcopy(subgraph)
+                    temp_subgraph.add_edge(eh, et, relation=er)
+                    temp_embed = self._get_graph_embedding(temp_subgraph, embed_model)
+                    temp_score = self._similarity_score(temp_embed, target_embed)
+                    print(f"[DEBUG]    New subgraph nodes: {list(temp_subgraph.nodes())}, edges: {list(temp_subgraph.edges(data=True))}, score: {temp_score:.4f}")
+                    new_visited = visited | {edge}
+                    heapq.heappush(new_beam, (-temp_score, id(temp_subgraph), temp_subgraph, new_visited))
+            # 保留top-k
+            beam = heapq.nsmallest(self.beam_size, new_beam)
+            if not beam:
                 break
-            
-            # 评估每个扩展选项
-            best_expansions = []
-            for edge in expansion_edges[:self.beam_size * 3]:  # 限制候选数量
-                temp_subgraph = current_subgraph.copy()
-                eh, et, er = edge
-                temp_subgraph.add_edge(eh, et, relation=er)
-                
-                temp_embed = self._get_graph_embedding(temp_subgraph, embed_model)
-                temp_score = self._similarity_score(temp_embed, target_embed)
-                
-                heapq.heappush(best_expansions, (-temp_score, edge, id(temp_subgraph), temp_subgraph))
-            
-            # 选择最佳扩展
-            if best_expansions:
-                _, best_edge, _, best_subgraph = heapq.heappop(best_expansions)
-                current_subgraph = best_subgraph
-                visited_edges.add(best_edge)
-                
-                logging.info(f"步骤 {step+1}: 添加边 {best_edge}, 当前相似度: {current_score:.4f}")
-            else:
-                break
-        
-        # 返回候选子图列表（这里简化处理，只返回最终扩展的子图）
-        return [current_subgraph]
+        print(f"[DEBUG] Final candidate subgraphs before filtering: {len(results)}")
+        for g in results:
+            print(f"[DEBUG]   Result subgraph nodes: {list(g.nodes())}, edges: {list(g.edges(data=True))}")
+        # 最终只保留节点/边数与规则结构一致的子图
+        final_results = [g for g in results if \
+            (rule_node_count and g.number_of_nodes() == rule_node_count) and \
+            (rule_edge_count and g.number_of_edges() == rule_edge_count)]
+        print(f"[DEBUG] Final filtered results: {len(final_results)}")
+        return final_results
     
     def _find_expansion_edges(self, subgraph: nx.Graph, 
                             kg: nx.MultiDiGraph, 
@@ -105,7 +110,11 @@ class GraphExpander:
             
             # 如果图为空，返回零向量
             if graph.number_of_nodes() == 0:
-                return torch.zeros(embed_model.embed_fusion.projection.out_features)
+                out_dim = embed_model.embed_fusion.projection.out_features
+                if out_dim is None:
+                    out_dim = 40  # fallback默认
+                out_dim = int(out_dim)
+                return torch.zeros((out_dim,))
             
             # 获取GNN嵌入
             pyg_data = nx_to_pyg(graph)
@@ -122,11 +131,13 @@ class GraphExpander:
             
             fused_embed = embed_model.embed_fusion(motif_embed, gnn_embed)
             return fused_embed.squeeze(0)
-            
         except Exception as e:
             logging.error(f"图嵌入提取失败: {e}")
-            # 返回零向量
-            return torch.zeros(embed_model.embed_fusion.projection.out_features)
+            out_dim = embed_model.embed_fusion.projection.out_features
+            if out_dim is None:
+                out_dim = 40  # fallback默认
+            out_dim = int(out_dim)
+            return torch.zeros((out_dim,))
     
     def _similarity_score(self, embed1: torch.Tensor, embed2: torch.Tensor) -> float:
         """计算两个嵌入向量的相似度"""

@@ -1,0 +1,810 @@
+[
+  {
+    "premise": [
+      [
+        "X",
+        "_also_see",
+        "Y"
+      ],
+      [
+        "Y",
+        "_synset_domain_topic_of",
+        "Z"
+      ]
+    ],
+    "conclusion": [
+      "X",
+      "_synset_domain_topic_of",
+      "Z"
+    ],
+    "support": 22,
+    "confidence": 0.2727272727272727,
+    "instances": [
+      {
+        "premise_instance": [
+          [
+            "00452512",
+            "_also_see",
+            "01695567"
+          ],
+          [
+            "01695567",
+            "_synset_domain_topic_of",
+            "00933420"
+          ]
+        ],
+        "conclusion_instance": [
+          "00452512",
+          "_synset_domain_topic_of",
+          "00933420"
+        ],
+        "conclusion_in_kg": false
+      },
+      {
+        "premise_instance": [
+          [
+            "02207206",
+            "_also_see",
+            "02323286"
+          ],
+          [
+            "02323286",
+            "_synset_domain_topic_of",
+            "01090446"
+          ]
+        ],
+        "conclusion_instance": [
+          "02207206",
+          "_synset_domain_topic_of",
+          "01090446"
+        ],
+        "conclusion_in_kg": true
+      },
+      {
+        "premise_instance": [
+          [
+            "01494310",
+            "_also_see",
+            "01661243"
+          ],
+          [
+            "01661243",
+            "_synset_domain_topic_of",
+            "00911048"
+          ]
+        ],
+        "conclusion_instance": [
+          "01494310",
+          "_synset_domain_topic_of",
+          "00911048"
+        ],
+        "conclusion_in_kg": false
+      },
+      {
+        "premise_instance": [
+          [
+            "02077656",
+            "_also_see",
+            "01981036"
+          ],
+          [
+            "01981036",
+            "_synset_domain_topic_of",
+            "00300441"
+          ]
+        ],
+        "conclusion_instance": [
+          "02077656",
+          "_synset_domain_topic_of",
+          "00300441"
+        ],
+        "conclusion_in_kg": false
+      },
+      {
+        "premise_instance": [
+          [
+            "01493741",
+            "_also_see",
+            "00213794"
+          ],
+          [
+            "00213794",
+            "_synset_domain_topic_of",
+            "00243918"
+          ]
+        ],
+        "conclusion_instance": [
+          "01493741",
+          "_synset_domain_topic_of",
+          "00243918"
+        ],
+        "conclusion_in_kg": false
+      },
+      {
+        "premise_instance": [
+          [
+            "02244619",
+            "_also_see",
+            "02166346"
+          ],
+          [
+            "02166346",
+            "_synset_domain_topic_of",
+            "06066555"
+          ]
+        ],
+        "conclusion_instance": [
+          "02244619",
+          "_synset_domain_topic_of",
+          "06066555"
+        ],
+        "conclusion_in_kg": true
+      },
+      {
+        "premise_instance": [
+          [
+            "02244956",
+            "_also_see",
+            "02260362"
+          ],
+          [
+            "02260362",
+            "_synset_domain_topic_of",
+            "01090446"
+          ]
+        ],
+        "conclusion_instance": [
+          "02244956",
+          "_synset_domain_topic_of",
+          "01090446"
+        ],
+        "conclusion_in_kg": true
+      },
+      {
+        "premise_instance": [
+          [
+            "01908039",
+            "_also_see",
+            "00427786"
+          ],
+          [
+            "00427786",
+            "_synset_domain_topic_of",
+            "05946687"
+          ]
+        ],
+        "conclusion_instance": [
+          "01908039",
+          "_synset_domain_topic_of",
+          "05946687"
+        ],
+        "conclusion_in_kg": false
+      },
+      {
+        "premise_instance": [
+          [
+            "01835496",
+            "_also_see",
+            "01970646"
+          ],
+          [
+            "01970646",
+            "_synset_domain_topic_of",
+            "06095022"
+          ]
+        ],
+        "conclusion_instance": [
+          "01835496",
+          "_synset_domain_topic_of",
+          "06095022"
+        ],
+        "conclusion_in_kg": false
+      },
+      {
+        "premise_instance": [
+          [
+            "01849221",
+            "_also_see",
+            "01970348"
+          ],
+          [
+            "01970348",
+            "_synset_domain_topic_of",
+            "06095022"
+          ]
+        ],
+        "conclusion_instance": [
+          "01849221",
+          "_synset_domain_topic_of",
+          "06095022"
+        ],
+        "conclusion_in_kg": false
+      },
+      {
+        "premise_instance": [
+          [
+            "01430111",
+            "_also_see",
+            "00111129"
+          ],
+          [
+            "00111129",
+            "_synset_domain_topic_of",
+            "06163751"
+          ]
+        ],
+        "conclusion_instance": [
+          "01430111",
+          "_synset_domain_topic_of",
+          "06163751"
+        ],
+        "conclusion_in_kg": false
+      },
+      {
+        "premise_instance": [
+          [
+            "01484083",
+            "_also_see",
+            "01477806"
+          ],
+          [
+            "01477806",
+            "_synset_domain_topic_of",
+            "06037666"
+          ]
+        ],
+        "conclusion_instance": [
+          "01484083",
+          "_synset_domain_topic_of",
+          "06037666"
+        ],
+        "conclusion_in_kg": false
+      },
+      {
+        "premise_instance": [
+          [
+            "01489722",
+            "_also_see",
+            "01646941"
+          ],
+          [
+            "01646941",
+            "_synset_domain_topic_of",
+            "00004258"
+          ]
+        ],
+        "conclusion_instance": [
+          "01489722",
+          "_synset_domain_topic_of",
+          "00004258"
+        ],
+        "conclusion_in_kg": false
+      },
+      {
+        "premise_instance": [
+          [
+            "02174896",
+            "_also_see",
+            "02166346"
+          ],
+          [
+            "02166346",
+            "_synset_domain_topic_of",
+            "06066555"
+          ]
+        ],
+        "conclusion_instance": [
+          "02174896",
+          "_synset_domain_topic_of",
+          "06066555"
+        ],
+        "conclusion_in_kg": false
+      },
+      {
+        "premise_instance": [
+          [
+            "02100709",
+            "_also_see",
+            "01646941"
+          ],
+          [
+            "01646941",
+            "_synset_domain_topic_of",
+            "00004258"
+          ]
+        ],
+        "conclusion_instance": [
+          "02100709",
+          "_synset_domain_topic_of",
+          "00004258"
+        ],
+        "conclusion_in_kg": false
+      },
+      {
+        "premise_instance": [
+          [
+            "01494310",
+            "_also_see",
+            "01981036"
+          ],
+          [
+            "01981036",
+            "_synset_domain_topic_of",
+            "00300441"
+          ]
+        ],
+        "conclusion_instance": [
+          "01494310",
+          "_synset_domain_topic_of",
+          "00300441"
+        ],
+        "conclusion_in_kg": false
+      },
+      {
+        "premise_instance": [
+          [
+            "02166346",
+            "_also_see",
+            "02244619"
+          ],
+          [
+            "02244619",
+            "_synset_domain_topic_of",
+            "06066555"
+          ]
+        ],
+        "conclusion_instance": [
+          "02166346",
+          "_synset_domain_topic_of",
+          "06066555"
+        ],
+        "conclusion_in_kg": true
+      },
+      {
+        "premise_instance": [
+          [
+            "00334186",
+            "_also_see",
+            "00209174"
+          ],
+          [
+            "00209174",
+            "_synset_domain_topic_of",
+            "06084469"
+          ]
+        ],
+        "conclusion_instance": [
+          "00334186",
+          "_synset_domain_topic_of",
+          "06084469"
+        ],
+        "conclusion_in_kg": false
+      },
+      {
+        "premise_instance": [
+          [
+            "02251743",
+            "_also_see",
+            "02284803"
+          ],
+          [
+            "02284803",
+            "_synset_domain_topic_of",
+            "00766234"
+          ]
+        ],
+        "conclusion_instance": [
+          "02251743",
+          "_synset_domain_topic_of",
+          "00766234"
+        ],
+        "conclusion_in_kg": false
+      },
+      {
+        "premise_instance": [
+          [
+            "00173338",
+            "_also_see",
+            "00641252"
+          ],
+          [
+            "00641252",
+            "_synset_domain_topic_of",
+            "06004067"
+          ]
+        ],
+        "conclusion_instance": [
+          "00173338",
+          "_synset_domain_topic_of",
+          "06004067"
+        ],
+        "conclusion_in_kg": false
+      },
+      {
+        "premise_instance": [
+          [
+            "02245403",
+            "_also_see",
+            "02166346"
+          ],
+          [
+            "02166346",
+            "_synset_domain_topic_of",
+            "06066555"
+          ]
+        ],
+        "conclusion_instance": [
+          "02245403",
+          "_synset_domain_topic_of",
+          "06066555"
+        ],
+        "conclusion_in_kg": true
+      },
+      {
+        "premise_instance": [
+          [
+            "01417868",
+            "_also_see",
+            "01666002"
+          ],
+          [
+            "01666002",
+            "_synset_domain_topic_of",
+            "00243918"
+          ]
+        ],
+        "conclusion_instance": [
+          "01417868",
+          "_synset_domain_topic_of",
+          "00243918"
+        ],
+        "conclusion_in_kg": true
+      }
+    ],
+    "rule_id": "rule_001"
+  },
+  {
+    "premise": [
+      [
+        "X",
+        "_also_see",
+        "Y"
+      ],
+      [
+        "X",
+        "_synset_domain_topic_of",
+        "Z"
+      ]
+    ],
+    "conclusion": [
+      "Y",
+      "_synset_domain_topic_of",
+      "Z"
+    ],
+    "support": 16,
+    "confidence": 0.375,
+    "instances": [
+      {
+        "premise_instance": [
+          [
+            "02207206",
+            "_also_see",
+            "02323286"
+          ],
+          [
+            "02207206",
+            "_synset_domain_topic_of",
+            "01090446"
+          ]
+        ],
+        "conclusion_instance": [
+          "02323286",
+          "_synset_domain_topic_of",
+          "01090446"
+        ],
+        "conclusion_in_kg": true
+      },
+      {
+        "premise_instance": [
+          [
+            "00637259",
+            "_also_see",
+            "00634906"
+          ],
+          [
+            "00637259",
+            "_synset_domain_topic_of",
+            "06000644"
+          ]
+        ],
+        "conclusion_instance": [
+          "00634906",
+          "_synset_domain_topic_of",
+          "06000644"
+        ],
+        "conclusion_in_kg": false
+      },
+      {
+        "premise_instance": [
+          [
+            "00640828",
+            "_also_see",
+            "02645007"
+          ],
+          [
+            "00640828",
+            "_synset_domain_topic_of",
+            "06004067"
+          ]
+        ],
+        "conclusion_instance": [
+          "02645007",
+          "_synset_domain_topic_of",
+          "06004067"
+        ],
+        "conclusion_in_kg": false
+      },
+      {
+        "premise_instance": [
+          [
+            "02244619",
+            "_also_see",
+            "02166346"
+          ],
+          [
+            "02244619",
+            "_synset_domain_topic_of",
+            "06066555"
+          ]
+        ],
+        "conclusion_instance": [
+          "02166346",
+          "_synset_domain_topic_of",
+          "06066555"
+        ],
+        "conclusion_in_kg": true
+      },
+      {
+        "premise_instance": [
+          [
+            "02244956",
+            "_also_see",
+            "02260362"
+          ],
+          [
+            "02244956",
+            "_synset_domain_topic_of",
+            "01090446"
+          ]
+        ],
+        "conclusion_instance": [
+          "02260362",
+          "_synset_domain_topic_of",
+          "01090446"
+        ],
+        "conclusion_in_kg": true
+      },
+      {
+        "premise_instance": [
+          [
+            "00427786",
+            "_also_see",
+            "01908039"
+          ],
+          [
+            "00427786",
+            "_synset_domain_topic_of",
+            "05946687"
+          ]
+        ],
+        "conclusion_instance": [
+          "01908039",
+          "_synset_domain_topic_of",
+          "05946687"
+        ],
+        "conclusion_in_kg": false
+      },
+      {
+        "premise_instance": [
+          [
+            "00637259",
+            "_also_see",
+            "00712708"
+          ],
+          [
+            "00637259",
+            "_synset_domain_topic_of",
+            "06000644"
+          ]
+        ],
+        "conclusion_instance": [
+          "00712708",
+          "_synset_domain_topic_of",
+          "06000644"
+        ],
+        "conclusion_in_kg": false
+      },
+      {
+        "premise_instance": [
+          [
+            "01646941",
+            "_also_see",
+            "01489722"
+          ],
+          [
+            "01646941",
+            "_synset_domain_topic_of",
+            "00004258"
+          ]
+        ],
+        "conclusion_instance": [
+          "01489722",
+          "_synset_domain_topic_of",
+          "00004258"
+        ],
+        "conclusion_in_kg": false
+      },
+      {
+        "premise_instance": [
+          [
+            "00111129",
+            "_also_see",
+            "01430111"
+          ],
+          [
+            "00111129",
+            "_synset_domain_topic_of",
+            "06163751"
+          ]
+        ],
+        "conclusion_instance": [
+          "01430111",
+          "_synset_domain_topic_of",
+          "06163751"
+        ],
+        "conclusion_in_kg": false
+      },
+      {
+        "premise_instance": [
+          [
+            "01646941",
+            "_also_see",
+            "02100709"
+          ],
+          [
+            "01646941",
+            "_synset_domain_topic_of",
+            "00004258"
+          ]
+        ],
+        "conclusion_instance": [
+          "02100709",
+          "_synset_domain_topic_of",
+          "00004258"
+        ],
+        "conclusion_in_kg": false
+      },
+      {
+        "premise_instance": [
+          [
+            "02166346",
+            "_also_see",
+            "02244619"
+          ],
+          [
+            "02166346",
+            "_synset_domain_topic_of",
+            "06066555"
+          ]
+        ],
+        "conclusion_instance": [
+          "02244619",
+          "_synset_domain_topic_of",
+          "06066555"
+        ],
+        "conclusion_in_kg": true
+      },
+      {
+        "premise_instance": [
+          [
+            "02166346",
+            "_also_see",
+            "02174896"
+          ],
+          [
+            "02166346",
+            "_synset_domain_topic_of",
+            "06066555"
+          ]
+        ],
+        "conclusion_instance": [
+          "02174896",
+          "_synset_domain_topic_of",
+          "06066555"
+        ],
+        "conclusion_in_kg": false
+      },
+      {
+        "premise_instance": [
+          [
+            "01646941",
+            "_also_see",
+            "01640850"
+          ],
+          [
+            "01646941",
+            "_synset_domain_topic_of",
+            "00004258"
+          ]
+        ],
+        "conclusion_instance": [
+          "01640850",
+          "_synset_domain_topic_of",
+          "00004258"
+        ],
+        "conclusion_in_kg": false
+      },
+      {
+        "premise_instance": [
+          [
+            "02245403",
+            "_also_see",
+            "02166346"
+          ],
+          [
+            "02245403",
+            "_synset_domain_topic_of",
+            "06066555"
+          ]
+        ],
+        "conclusion_instance": [
+          "02166346",
+          "_synset_domain_topic_of",
+          "06066555"
+        ],
+        "conclusion_in_kg": true
+      },
+      {
+        "premise_instance": [
+          [
+            "01477806",
+            "_also_see",
+            "01484083"
+          ],
+          [
+            "01477806",
+            "_synset_domain_topic_of",
+            "06037666"
+          ]
+        ],
+        "conclusion_instance": [
+          "01484083",
+          "_synset_domain_topic_of",
+          "06037666"
+        ],
+        "conclusion_in_kg": false
+      },
+      {
+        "premise_instance": [
+          [
+            "01417868",
+            "_also_see",
+            "01666002"
+          ],
+          [
+            "01417868",
+            "_synset_domain_topic_of",
+            "00243918"
+          ]
+        ],
+        "conclusion_instance": [
+          "01666002",
+          "_synset_domain_topic_of",
+          "00243918"
+        ],
+        "conclusion_in_kg": true
+      }
+    ],
+    "rule_id": "rule_002"
+  }
+]

@@ -1,0 +1,48 @@
+[
+  {
+    "rule_id": "rule_001",
+    "premise": [
+      {
+        "h": "X",
+        "r": "_also_see",
+        "t": "Y"
+      },
+      {
+        "h": "Y",
+        "r": "_synset_domain_topic_of",
+        "t": "Z"
+      }
+    ],
+    "conclusion": {
+      "h": "X",
+      "r": "_synset_domain_topic_of",
+      "t": "Z"
+    },
+    "support": 23,
+    "confidence": 0.30434782608695654,
+    "type": "chain"
+  },
+  {
+    "rule_id": "rule_002",
+    "premise": [
+      {
+        "h": "X",
+        "r": "_also_see",
+        "t": "Y"
+      },
+      {
+        "h": "X",
+        "r": "_synset_domain_topic_of",
+        "t": "Z"
+      }
+    ],
+    "conclusion": {
+      "h": "Y",
+      "r": "_synset_domain_topic_of",
+      "t": "Z"
+    },
+    "support": 18,
+    "confidence": 0.3888888888888889,
+    "type": "chain"
+  }
+]

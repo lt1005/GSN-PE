@@ -3,6 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch_geometric.nn import GINConv, GATConv, GCNConv, global_mean_pool, global_max_pool
 from torch_geometric.data import Data, Batch
+from typing import Optional
 
 class GNNEncoder(nn.Module):
     """GNN结构嵌入模块"""
@@ -66,16 +67,18 @@ class GNNEncoder(nn.Module):
         
         self.dropout = nn.Dropout(0.1)
         
-    def forward(self, data: Data) -> torch.Tensor:
-        """前向传播"""
+    def forward(self, data: Data, motif_feat: Optional[torch.Tensor] = None) -> torch.Tensor:
+        """前向传播，支持节点特征与motif特征拼接输入"""
         x, edge_index, batch = data.x, data.edge_index, data.batch
-        
-        print("x shape:", x.shape)
-        print("edge_index shape:", edge_index.shape)
-        
+        # motif_feat: [N, motif_dim] or None
         if x.dim() == 1:
             x = x.unsqueeze(-1)
-        
+        if motif_feat is not None:
+            if motif_feat.dim() == 1:
+                motif_feat = motif_feat.unsqueeze(0).repeat(x.size(0), 1)
+            elif motif_feat.size(0) == 1:
+                motif_feat = motif_feat.repeat(x.size(0), 1)
+            x = torch.cat([x, motif_feat], dim=-1)
         # GNN层
         for i, conv in enumerate(self.convs):
             x = conv(x, edge_index)
@@ -83,8 +86,6 @@ class GNNEncoder(nn.Module):
                 x = self.batch_norms[i](x)
             x = F.relu(x)
             x = self.dropout(x)
-        
         # 图级池化
         graph_embed = global_mean_pool(x, batch)
-        
         return graph_embed

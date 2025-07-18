@@ -31,3 +31,9 @@ class ScoringFunction:
             return -ScoringFunction.l1_distance(embed1, embed2)
         else:
             raise ValueError(f"Unknown metric: {metric}")
+    
+    @staticmethod
+    def compute_final_score(structure_score: float, semantic_score: float,
+                          structure_weight: float = 0.7, semantic_weight: float = 0.3) -> float:
+        """计算最终综合得分"""
+        return structure_weight * structure_score + semantic_weight * semantic_score

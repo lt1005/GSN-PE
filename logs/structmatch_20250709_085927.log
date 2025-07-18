@@ -1,0 +1,44 @@
+2025-07-09 08:59:27,847 - INFO - 成功加载预训练embedding
+2025-07-09 08:59:27,921 - WARNING - 加载训练模型失败: No module named 'simple_train'
+2025-07-09 08:59:27,922 - INFO - StructMatch系统初始化完成（集成语义增强）
+2025-07-09 08:59:27,923 - INFO - 开始加载数据...
+2025-07-09 08:59:29,032 - INFO - 成功加载知识图谱: 40559个实体, 11种关系, 86835个三元组
+2025-07-09 08:59:29,032 - INFO - 成功加载2条规则
+2025-07-09 08:59:29,032 - INFO - 数据加载完成
+2025-07-09 08:59:29,219 - INFO - 开始批量匹配，共100个anchor，规则ID: rule_001
+2025-07-09 08:59:29,221 - INFO - 规则关系类型: {'_synset_domain_topic_of', '_also_see'}
+2025-07-09 08:59:29,221 - INFO - 原始anchor数量: 100
+2025-07-09 08:59:29,221 - INFO - 优先关系anchor: 9, 其他关系anchor: 50
+2025-07-09 08:59:29,232 - INFO - 筛选后总anchor数量: 59
+2025-07-09 08:59:29,233 - INFO - 智能筛选后，保留59个相关anchor
+2025-07-09 08:59:29,233 - INFO - 处理第1/59个anchor
+2025-07-09 08:59:29,234 - INFO - 开始处理anchor: ('00260881', '_synset_domain_topic_of', '01124794')
+2025-07-09 08:59:29,254 - INFO - 最大扩展步数: 2
+2025-07-09 08:59:29,955 - ERROR - 相似度计算失败: The size of tensor a (12) must match the size of tensor b (44) at non-singleton dimension 1
+2025-07-09 08:59:29,958 - ERROR - 相似度计算失败: The size of tensor a (12) must match the size of tensor b (44) at non-singleton dimension 1
+2025-07-09 08:59:29,962 - ERROR - 相似度计算失败: The size of tensor a (12) must match the size of tensor b (44) at non-singleton dimension 1
+2025-07-09 08:59:29,965 - ERROR - 相似度计算失败: The size of tensor a (12) must match the size of tensor b (44) at non-singleton dimension 1
+2025-07-09 08:59:29,969 - ERROR - 相似度计算失败: The size of tensor a (12) must match the size of tensor b (44) at non-singleton dimension 1
+2025-07-09 08:59:29,973 - ERROR - 相似度计算失败: The size of tensor a (12) must match the size of tensor b (44) at non-singleton dimension 1
+2025-07-09 08:59:29,977 - ERROR - 相似度计算失败: The size of tensor a (12) must match the size of tensor b (44) at non-singleton dimension 1
+2025-07-09 08:59:29,981 - ERROR - 相似度计算失败: The size of tensor a (12) must match the size of tensor b (44) at non-singleton dimension 1
+2025-07-09 08:59:29,985 - ERROR - 相似度计算失败: The size of tensor a (12) must match the size of tensor b (44) at non-singleton dimension 1
+2025-07-09 08:59:29,989 - ERROR - 相似度计算失败: The size of tensor a (12) must match the size of tensor b (44) at non-singleton dimension 1
+2025-07-09 08:59:29,993 - ERROR - 相似度计算失败: The size of tensor a (12) must match the size of tensor b (44) at non-singleton dimension 1
+2025-07-09 08:59:29,996 - ERROR - 相似度计算失败: The size of tensor a (12) must match the size of tensor b (44) at non-singleton dimension 1
+2025-07-09 08:59:29,997 - ERROR - 相似度计算失败: The size of tensor a (12) must match the size of tensor b (44) at non-singleton dimension 1
+2025-07-09 08:59:29,999 - ERROR - 相似度计算失败: The size of tensor a (12) must match the size of tensor b (44) at non-singleton dimension 1
+2025-07-09 08:59:30,003 - ERROR - 相似度计算失败: The size of tensor a (12) must match the size of tensor b (44) at non-singleton dimension 1
+2025-07-09 08:59:30,006 - ERROR - 相似度计算失败: The size of tensor a (12) must match the size of tensor b (44) at non-singleton dimension 1
+2025-07-09 08:59:30,008 - ERROR - 相似度计算失败: The size of tensor a (12) must match the size of tensor b (44) at non-singleton dimension 1
+2025-07-09 08:59:30,011 - ERROR - 相似度计算失败: The size of tensor a (12) must match the size of tensor b (44) at non-singleton dimension 1
+2025-07-09 08:59:30,012 - ERROR - 相似度计算失败: The size of tensor a (12) must match the size of tensor b (44) at non-singleton dimension 1
+2025-07-09 08:59:30,014 - ERROR - 相似度计算失败: The size of tensor a (12) must match the size of tensor b (44) at non-singleton dimension 1
+2025-07-09 08:59:30,016 - ERROR - 相似度计算失败: The size of tensor a (12) must match the size of tensor b (44) at non-singleton dimension 1
+2025-07-09 08:59:30,021 - ERROR - 相似度计算失败: The size of tensor a (12) must match the size of tensor b (44) at non-singleton dimension 1
+2025-07-09 08:59:30,023 - ERROR - 相似度计算失败: The size of tensor a (12) must match the size of tensor b (44) at non-singleton dimension 1
+2025-07-09 08:59:30,026 - ERROR - 相似度计算失败: The size of tensor a (12) must match the size of tensor b (44) at non-singleton dimension 1
+2025-07-09 08:59:30,028 - ERROR - 相似度计算失败: The size of tensor a (12) must match the size of tensor b (44) at non-singleton dimension 1
+2025-07-09 08:59:30,029 - INFO - 步骤 1: 相似度提升不足 (0.0000), 停止扩展
+2025-07-09 08:59:30,033 - INFO - 匹配成功: True
+2025-07-09 08:59:30,034 - INFO - 匹配得分: 0.9439
